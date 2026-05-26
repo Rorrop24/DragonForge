@@ -16,8 +16,6 @@ public class DiceController {
     @Autowired
     private DiceService diceService;
 
-    // Endpoint principal de tiradas
-    // Ejemplo: GET http://localhost:8080/api/dice/roll?sides=10&count=1&modifier=5
     @GetMapping("/roll")
     public ResponseEntity<RollResultDTO> rollDice(
             @RequestParam(defaultValue = "20") int sides,
@@ -28,7 +26,6 @@ public class DiceController {
         return ResponseEntity.ok(result); // 200 OK
     }
 
-    // Endpoint para ver el historial (Cumple requisito REST adicional)
     @GetMapping("/historial")
     public ResponseEntity<List<Tirada>> verHistorial() {
         List<Tirada> historial = diceService.obtenerHistorial();

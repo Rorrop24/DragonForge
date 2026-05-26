@@ -1,5 +1,7 @@
 package com.DragonForge.notification_service.service;
 
+import com.DragonForge.notification_service.client.UserClient;
+import com.DragonForge.notification_service.dto.UsuarioDTO;
 import com.DragonForge.notification_service.model.Buzon;
 import com.DragonForge.notification_service.model.Notificacion;
 import com.DragonForge.notification_service.repository.BuzonRepository;
@@ -19,6 +21,9 @@ public class NotificationService {
     @Autowired
     private NotificacionRepository notificacionRepository;
 
+    @Autowired
+    private UserClient userClient;
+
     public List<Buzon> listarBuzones() {
         return buzonRepository.findAll();
     }
@@ -28,6 +33,10 @@ public class NotificationService {
     }
 
     public Buzon crearBuzon(Buzon buzon) {
+
+        UsuarioDTO usuario = userClient.obtenerUsuarioPorId(buzon.getUsuarioId());
+
+        buzon.setNombreJugador(usuario.getUsername());
         return buzonRepository.save(buzon);
     }
 
@@ -50,6 +59,7 @@ public class NotificationService {
     public Notificacion marcarComoLeida(Integer notificacionId) {
         Notificacion notificacion = notificacionRepository.findById(notificacionId)
                 .orElseThrow(() -> new RuntimeException("Notificación no encontrada"));
+
         notificacion.setLeida(true);
         return notificacionRepository.save(notificacion);
     }

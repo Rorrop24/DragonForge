@@ -24,7 +24,7 @@ public class EntradaCompendio {
     @Column(name = "descripcion_detallada", columnDefinition = "TEXT")
     private String descripcionDetallada;
 
-    private String estadisticas; // Puede ser opcional, ej: estadísticas de combate o daño
+    private String estadisticas;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "categoria_id", nullable = false)
