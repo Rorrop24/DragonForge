@@ -1,4 +1,4 @@
-package com.DragonForge.character_service.config;
+package com.DragonForge.notification_service.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,6 +9,6 @@ public class WebClientConfig {
 
     @Bean
     public WebClient webClient() {
-        return WebClient.builder().baseUrl("http://localhost:8088").build();
+        return WebClient.builder().baseUrl("http://localhost:8090").build();
     }
 }

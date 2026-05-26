@@ -1,6 +1,5 @@
 package com.DragonForge.character_service.controller;
 
-
 import com.DragonForge.character_service.dto.PersonajeDTO;
 import com.DragonForge.character_service.model.Personaje;
 import com.DragonForge.character_service.service.PersonajeService;
@@ -20,27 +19,27 @@ public class PersonajeController {
     private PersonajeService service;
 
     @GetMapping
-    public ResponseEntity listar(){
-        List list = service.listarTodos();
-        if(list.isEmpty()){
+    public ResponseEntity<List<PersonajeDTO>> listar() {
+        List<PersonajeDTO> list = service.listarTodos();
+        if (list.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(list);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity busca(@PathVariable Integer id) {
+    public ResponseEntity<PersonajeDTO> buscar(@PathVariable Integer id) {
         try {
             PersonajeDTO dto = service.buscarPorId(id);
             return ResponseEntity.ok(dto);
-        } catch (RuntimeException exc) {
+        } catch (RuntimeException ex) {
             return ResponseEntity.notFound().build();
         }
     }
 
     @PostMapping
-    public ResponseEntity registrar (@Valid @RequestBody Personaje personaje){
-        PersonajeDTO nuevito = service.crearPersonaje(personaje);
-        return ResponseEntity.status(HttpStatus.CREATED).body(nuevito);
+    public ResponseEntity<PersonajeDTO> registrar(@Valid @RequestBody Personaje personaje) {
+        PersonajeDTO nuevo = service.crearPersonaje(personaje);
+        return ResponseEntity.status(HttpStatus.CREATED).body(nuevo);
     }
 }

@@ -35,9 +35,9 @@ public class WikiController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PostMapping("/articulos")
-    public ResponseEntity<Articulo> crearArticulo(@Valid @RequestBody Articulo articulo) {
-        Articulo nuevoArticulo = wikiService.crearArticulo(articulo);
+    @PostMapping("/articulos/{autorId}")
+    public ResponseEntity<Articulo> crearArticulo(@Valid @RequestBody Articulo articulo, @PathVariable Integer autorId) {
+        Articulo nuevoArticulo = wikiService.crearArticulo(articulo, autorId);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoArticulo);
     }
 

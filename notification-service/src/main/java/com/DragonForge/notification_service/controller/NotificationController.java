@@ -19,8 +19,6 @@ public class NotificationController {
     @Autowired
     private NotificationService notificationService;
 
-    // --- Endpoints de Buzones ---
-
     @GetMapping("/buzones")
     public ResponseEntity<List<Buzon>> listarBuzones() {
         List<Buzon> buzones = notificationService.listarBuzones();
@@ -39,7 +37,6 @@ public class NotificationController {
         return buzon.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // --- Endpoints de Notificaciones ---
 
     @GetMapping("/buzones/{buzonId}/mensajes")
     public ResponseEntity<List<Notificacion>> listarNotificaciones(@PathVariable Integer buzonId) {
