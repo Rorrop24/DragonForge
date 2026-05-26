@@ -1,4 +1,4 @@
-package com.rng_service.controller;
+package com.DragonForge.rng_service.controller;
 
 import com.DragonForge.rng_service.dto.RollResultDTO;
 import com.DragonForge.rng_service.model.Tirada;

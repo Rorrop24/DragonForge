@@ -1,5 +1,5 @@
 
-package com.rng_service.dto;
+package com.DragonForge.rng_service.dto;
 
 import lombok.Data;
 import java.util.List;

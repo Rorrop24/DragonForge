@@ -1,4 +1,4 @@
-package com.rng_service.repository;
+package com.DragonForge.rng_service.repository;
 
 import com.DragonForge.rng_service.model.Tirada;
 import org.springframework.data.jpa.repository.JpaRepository;

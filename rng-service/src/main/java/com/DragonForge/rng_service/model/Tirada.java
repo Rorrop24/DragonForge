@@ -1,4 +1,4 @@
-package com.rng_service.model;
+package com.DragonForge.rng_service.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
