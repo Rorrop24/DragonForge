@@ -3,6 +3,8 @@ package com.DragonForge.wiki_service.controller;
 import com.DragonForge.wiki_service.model.Articulo;
 import com.DragonForge.wiki_service.model.Comentario;
 import com.DragonForge.wiki_service.service.WikiService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,11 +16,13 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/wiki")
+@Tag(name = "Enciclopedia y Lore (Wiki)", description = "Operaciones para gestionar los artículos de la historia del mundo, facciones, ciudades y los comentarios de los jugadores")
 public class WikiController {
 
     @Autowired
     private WikiService wikiService;
 
+    @Operation(summary = "Obtiene el catálogo completo de todos los artículos y documentos publicados en la wiki")
     @GetMapping("/articulos")
     public ResponseEntity<List<Articulo>> listarTodos() {
         List<Articulo> articulos = wikiService.listarArticulos();
@@ -28,6 +32,7 @@ public class WikiController {
         return ResponseEntity.ok(articulos);
     }
 
+    @Operation(summary = "Busca y recupera el pergamino o contenido detallado de un artículo específico mediante su ID")
     @GetMapping("/articulos/{id}")
     public ResponseEntity<Articulo> buscarPorId(@PathVariable Integer id) {
         Optional<Articulo> articulo = wikiService.buscarArticulo(id);
@@ -35,12 +40,14 @@ public class WikiController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @Operation(summary = "Escribe y publica un nuevo artículo de lore (ej: la historia del reino) asociándolo al ID del Dungeon Master o autor")
     @PostMapping("/articulos/{autorId}")
     public ResponseEntity<Articulo> crearArticulo(@Valid @RequestBody Articulo articulo, @PathVariable Integer autorId) {
         Articulo nuevoArticulo = wikiService.crearArticulo(articulo, autorId);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoArticulo);
     }
 
+    @Operation(summary = "Lista todos los comentarios, teorías o notas dejadas por los jugadores en un artículo específico")
     @GetMapping("/articulos/{id}/comentarios")
     public ResponseEntity<List<Comentario>> verComentarios(@PathVariable Integer id) {
         List<Comentario> comentarios = wikiService.verComentariosDeArticulo(id);
@@ -50,6 +57,7 @@ public class WikiController {
         return ResponseEntity.ok(comentarios);
     }
 
+    @Operation(summary = "Añade un nuevo comentario o nota de discusión al final de un artículo existente de la wiki")
     @PostMapping("/articulos/{id}/comentarios")
     public ResponseEntity<?> agregarComentario(@PathVariable Integer id, @Valid @RequestBody Comentario comentario) {
         try {
