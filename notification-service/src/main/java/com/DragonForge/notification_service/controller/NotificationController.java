@@ -78,4 +78,59 @@ public class NotificationController {
             return ResponseEntity.notFound().build();
         }
     }
+    @Operation(summary = "Busca un buzon mediante su ID")
+    @GetMapping("/buzones/{id}")
+    public ResponseEntity<Buzon> buscarBuzon(@PathVariable Integer id) {
+        Optional<Buzon> buzon = notificationService.buscarBuzon(id);
+        return buzon.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @Operation(summary = "Personaliza un buzon existente")
+    @PutMapping("/buzones/{id}")
+    public ResponseEntity<Buzon> actualizarBuzon(@PathVariable Integer id, @Valid @RequestBody Buzon buzon) {
+        try {
+            return ResponseEntity.ok(notificationService.actualizarBuzon(id, buzon));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @Operation(summary = "Elimina un buzon y sus mensajes")
+    @DeleteMapping("/buzones/{id}")
+    public ResponseEntity<Void> eliminarBuzon(@PathVariable Integer id) {
+        try {
+            notificationService.eliminarBuzon(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @Operation(summary = "Busca una notificacion mediante su ID")
+    @GetMapping("/mensajes/{id}")
+    public ResponseEntity<Notificacion> buscarNotificacion(@PathVariable Integer id) {
+        Optional<Notificacion> notificacion = notificationService.buscarNotificacion(id);
+        return notificacion.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @Operation(summary = "Personaliza una notificacion existente")
+    @PutMapping("/mensajes/{id}")
+    public ResponseEntity<?> actualizarNotificacion(@PathVariable Integer id, @Valid @RequestBody Notificacion notificacion) {
+        try {
+            return ResponseEntity.ok(notificationService.actualizarNotificacion(id, notificacion));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @Operation(summary = "Elimina una notificacion mediante su ID")
+    @DeleteMapping("/mensajes/{id}")
+    public ResponseEntity<Void> eliminarNotificacion(@PathVariable Integer id) {
+        try {
+            notificationService.eliminarNotificacion(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

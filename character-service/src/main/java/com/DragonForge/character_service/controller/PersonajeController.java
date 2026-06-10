@@ -48,4 +48,26 @@ public class PersonajeController {
         PersonajeDTO nuevo = service.crearPersonaje(personaje);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevo);
     }
+
+    @Operation(summary = "Personaliza o actualiza los datos de un personaje existente")
+    @PutMapping("/{id}")
+    public ResponseEntity<PersonajeDTO> actualizar(@PathVariable Integer id, @Valid @RequestBody Personaje personaje) {
+        try {
+            PersonajeDTO actualizado = service.actualizarPersonaje(id, personaje);
+            return ResponseEntity.ok(actualizado);
+        } catch (RuntimeException ex) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @Operation(summary = "Elimina un personaje mediante su ID")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
+        try {
+            service.eliminarPersonaje(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException ex) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

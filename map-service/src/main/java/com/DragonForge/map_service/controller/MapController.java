@@ -67,4 +67,53 @@ public class MapController {
             return ResponseEntity.notFound().build();
         }
     }
+    @Operation(summary = "Personaliza un mapa existente")
+    @PutMapping("/{id}")
+    public ResponseEntity<Mapa> actualizarMapa(@PathVariable Integer id, @Valid @RequestBody Mapa mapa) {
+        try {
+            return ResponseEntity.ok(mapService.actualizarMapa(id, mapa));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @Operation(summary = "Elimina un mapa y sus ubicaciones")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarMapa(@PathVariable Integer id) {
+        try {
+            mapService.eliminarMapa(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @Operation(summary = "Busca una ubicacion mediante su ID")
+    @GetMapping("/ubicaciones/{id}")
+    public ResponseEntity<Ubicacion> buscarUbicacion(@PathVariable Integer id) {
+        Optional<Ubicacion> ubicacion = mapService.buscarUbicacion(id);
+        return ubicacion.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @Operation(summary = "Personaliza una ubicacion existente")
+    @PutMapping("/ubicaciones/{id}")
+    public ResponseEntity<?> actualizarUbicacion(@PathVariable Integer id, @Valid @RequestBody Ubicacion ubicacion) {
+        try {
+            return ResponseEntity.ok(mapService.actualizarUbicacion(id, ubicacion));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @Operation(summary = "Elimina una ubicacion mediante su ID")
+    @DeleteMapping("/ubicaciones/{id}")
+    public ResponseEntity<Void> eliminarUbicacion(@PathVariable Integer id) {
+        try {
+            mapService.eliminarUbicacion(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

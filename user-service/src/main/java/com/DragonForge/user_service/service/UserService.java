@@ -42,4 +42,49 @@ public class UserService {
         campana.setDungeonMaster(dm);
         return campanaRepository.save(campana);
     }
+    public Usuario actualizarUsuario(Integer id, Usuario datos) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        usuario.setUsername(datos.getUsername());
+        usuario.setEmail(datos.getEmail());
+        usuario.setPassword(datos.getPassword());
+        return usuarioRepository.save(usuario);
+    }
+
+    public void eliminarUsuario(Integer id) {
+        if (!usuarioRepository.existsById(id)) {
+            throw new RuntimeException("Usuario no encontrado");
+        }
+
+        usuarioRepository.deleteById(id);
+    }
+
+    public Optional<Campana> buscarCampana(Integer id) {
+        return campanaRepository.findById(id);
+    }
+
+    public Campana actualizarCampana(Integer id, Campana datos) {
+        Campana campana = campanaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Campana no encontrada"));
+
+        campana.setNombre(datos.getNombre());
+        campana.setDescripcion(datos.getDescripcion());
+
+        if (datos.getDungeonMaster() != null && datos.getDungeonMaster().getId() != null) {
+            Usuario dm = usuarioRepository.findById(datos.getDungeonMaster().getId())
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            campana.setDungeonMaster(dm);
+        }
+
+        return campanaRepository.save(campana);
+    }
+
+    public void eliminarCampana(Integer id) {
+        if (!campanaRepository.existsById(id)) {
+            throw new RuntimeException("Campana no encontrada");
+        }
+
+        campanaRepository.deleteById(id);
+    }
 }

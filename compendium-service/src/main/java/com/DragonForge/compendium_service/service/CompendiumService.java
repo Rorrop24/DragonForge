@@ -46,4 +46,45 @@ public class CompendiumService {
         entrada.setCategoria(categoria);
         return entradaRepository.save(entrada);
     }
+    public CategoriaCompendio actualizarCategoria(Integer id, CategoriaCompendio datos) {
+        CategoriaCompendio categoria = categoriaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Categoria no encontrada con ID: " + id));
+
+        categoria.setNombre(datos.getNombre());
+        categoria.setDescripcion(datos.getDescripcion());
+        return categoriaRepository.save(categoria);
+    }
+
+    public void eliminarCategoria(Integer id) {
+        if (!categoriaRepository.existsById(id)) {
+            throw new RuntimeException("Categoria no encontrada con ID: " + id);
+        }
+
+        categoriaRepository.deleteById(id);
+    }
+
+    public EntradaCompendio actualizarEntrada(Integer id, EntradaCompendio datos) {
+        EntradaCompendio entrada = entradaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Entrada no encontrada con ID: " + id));
+
+        entrada.setTitulo(datos.getTitulo());
+        entrada.setDescripcionDetallada(datos.getDescripcionDetallada());
+        entrada.setEstadisticas(datos.getEstadisticas());
+
+        if (datos.getCategoria() != null && datos.getCategoria().getId() != null) {
+            CategoriaCompendio categoria = categoriaRepository.findById(datos.getCategoria().getId())
+                    .orElseThrow(() -> new RuntimeException("Categoria no encontrada con ID: " + datos.getCategoria().getId()));
+            entrada.setCategoria(categoria);
+        }
+
+        return entradaRepository.save(entrada);
+    }
+
+    public void eliminarEntrada(Integer id) {
+        if (!entradaRepository.existsById(id)) {
+            throw new RuntimeException("Entrada no encontrada con ID: " + id);
+        }
+
+        entradaRepository.deleteById(id);
+    }
 }

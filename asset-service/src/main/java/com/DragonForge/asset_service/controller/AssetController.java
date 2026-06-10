@@ -39,6 +39,27 @@ public class AssetController {
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevaCarpeta);
     }
 
+    @Operation(summary = "Personaliza una carpeta existente")
+    @PutMapping("/carpetas/{id}")
+    public ResponseEntity<CarpetaActivo> actualizarCarpeta(@PathVariable Integer id, @Valid @RequestBody CarpetaActivo carpeta) {
+        try {
+            return ResponseEntity.ok(assetService.actualizarCarpeta(id, carpeta));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @Operation(summary = "Elimina una carpeta y sus archivos")
+    @DeleteMapping("/carpetas/{id}")
+    public ResponseEntity<Void> eliminarCarpeta(@PathVariable Integer id) {
+        try {
+            assetService.eliminarCarpeta(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @Operation(summary = "Lista todos los archivos (imágenes, sonidos, etc.) contenidos dentro de una carpeta específica")
     @GetMapping("/carpetas/{id}/archivos")
     public ResponseEntity<List<ArchivoActivo>> listarArchivos(@PathVariable Integer id) {
@@ -49,12 +70,41 @@ public class AssetController {
         return ResponseEntity.ok(archivos);
     }
 
+    @Operation(summary = "Busca un archivo por ID")
+    @GetMapping("/archivos/{id}")
+    public ResponseEntity<ArchivoActivo> buscarArchivo(@PathVariable Integer id) {
+        Optional<ArchivoActivo> archivo = assetService.buscarArchivo(id);
+        return archivo.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @Operation(summary = "Sube y registra un nuevo archivo multimedia asociándolo a una carpeta existente")
     @PostMapping("/carpetas/{id}/archivos")
     public ResponseEntity<?> subirArchivo(@PathVariable Integer id, @Valid @RequestBody ArchivoActivo archivo) {
         try {
             ArchivoActivo nuevoArchivo = assetService.guardarArchivo(id, archivo);
             return ResponseEntity.status(HttpStatus.CREATED).body(nuevoArchivo);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @Operation(summary = "Personaliza un archivo existente")
+    @PutMapping("/archivos/{id}")
+    public ResponseEntity<?> actualizarArchivo(@PathVariable Integer id, @Valid @RequestBody ArchivoActivo archivo) {
+        try {
+            return ResponseEntity.ok(assetService.actualizarArchivo(id, archivo));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @Operation(summary = "Elimina un archivo por ID")
+    @DeleteMapping("/archivos/{id}")
+    public ResponseEntity<Void> eliminarArchivo(@PathVariable Integer id) {
+        try {
+            assetService.eliminarArchivo(id);
+            return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }

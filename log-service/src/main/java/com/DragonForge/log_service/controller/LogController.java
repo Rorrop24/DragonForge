@@ -67,4 +67,53 @@ public class LogController {
             return ResponseEntity.notFound().build();
         }
     }
+    @Operation(summary = "Personaliza un diario existente")
+    @PutMapping("/diarios/{id}")
+    public ResponseEntity<Diario> actualizarDiario(@PathVariable Integer id, @Valid @RequestBody Diario diario) {
+        try {
+            return ResponseEntity.ok(logService.actualizarDiario(id, diario));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @Operation(summary = "Elimina un diario y sus entradas")
+    @DeleteMapping("/diarios/{id}")
+    public ResponseEntity<Void> eliminarDiario(@PathVariable Integer id) {
+        try {
+            logService.eliminarDiario(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @Operation(summary = "Busca una entrada de diario mediante su ID")
+    @GetMapping("/entradas/{id}")
+    public ResponseEntity<Entrada> buscarEntrada(@PathVariable Integer id) {
+        Optional<Entrada> entrada = logService.buscarEntrada(id);
+        return entrada.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @Operation(summary = "Personaliza una entrada de diario")
+    @PutMapping("/entradas/{id}")
+    public ResponseEntity<?> actualizarEntrada(@PathVariable Integer id, @Valid @RequestBody Entrada entrada) {
+        try {
+            return ResponseEntity.ok(logService.actualizarEntrada(id, entrada));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @Operation(summary = "Elimina una entrada de diario")
+    @DeleteMapping("/entradas/{id}")
+    public ResponseEntity<Void> eliminarEntrada(@PathVariable Integer id) {
+        try {
+            logService.eliminarEntrada(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

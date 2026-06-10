@@ -77,4 +77,45 @@ public class CompendiumController {
             return ResponseEntity.notFound().build();
         }
     }
+    @Operation(summary = "Personaliza una categoria del compendio")
+    @PutMapping("/categorias/{id}")
+    public ResponseEntity<CategoriaCompendio> actualizarCategoria(@PathVariable Integer id, @Valid @RequestBody CategoriaCompendio categoria) {
+        try {
+            return ResponseEntity.ok(compendiumService.actualizarCategoria(id, categoria));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @Operation(summary = "Elimina una categoria del compendio")
+    @DeleteMapping("/categorias/{id}")
+    public ResponseEntity<Void> eliminarCategoria(@PathVariable Integer id) {
+        try {
+            compendiumService.eliminarCategoria(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @Operation(summary = "Personaliza una entrada del compendio")
+    @PutMapping("/entradas/{id}")
+    public ResponseEntity<?> actualizarEntrada(@PathVariable Integer id, @Valid @RequestBody EntradaCompendio entrada) {
+        try {
+            return ResponseEntity.ok(compendiumService.actualizarEntrada(id, entrada));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @Operation(summary = "Elimina una entrada del compendio")
+    @DeleteMapping("/entradas/{id}")
+    public ResponseEntity<Void> eliminarEntrada(@PathVariable Integer id) {
+        try {
+            compendiumService.eliminarEntrada(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

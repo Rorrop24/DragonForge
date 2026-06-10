@@ -70,4 +70,59 @@ public class LootController {
         }
         return ResponseEntity.ok(categorias);
     }
+    @Operation(summary = "Personaliza un objeto existente")
+    @PutMapping("/items/{id}")
+    public ResponseEntity<?> actualizarItem(@PathVariable Integer id, @Valid @RequestBody Item item) {
+        try {
+            return ResponseEntity.ok(lootService.actualizarItem(id, item));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @Operation(summary = "Elimina un objeto mediante su ID")
+    @DeleteMapping("/items/{id}")
+    public ResponseEntity<Void> eliminarItem(@PathVariable Integer id) {
+        try {
+            lootService.eliminarItem(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @Operation(summary = "Busca una categoria de botin mediante su ID")
+    @GetMapping("/categorias/{id}")
+    public ResponseEntity<Categoria> buscarCategoria(@PathVariable Integer id) {
+        Optional<Categoria> categoria = lootService.buscarCategoriaPorId(id);
+        return categoria.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @Operation(summary = "Crea una categoria de botin")
+    @PostMapping("/categorias")
+    public ResponseEntity<Categoria> crearCategoria(@Valid @RequestBody Categoria categoria) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(lootService.crearCategoria(categoria));
+    }
+
+    @Operation(summary = "Personaliza una categoria de botin")
+    @PutMapping("/categorias/{id}")
+    public ResponseEntity<Categoria> actualizarCategoria(@PathVariable Integer id, @Valid @RequestBody Categoria categoria) {
+        try {
+            return ResponseEntity.ok(lootService.actualizarCategoria(id, categoria));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @Operation(summary = "Elimina una categoria de botin")
+    @DeleteMapping("/categorias/{id}")
+    public ResponseEntity<Void> eliminarCategoria(@PathVariable Integer id) {
+        try {
+            lootService.eliminarCategoria(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

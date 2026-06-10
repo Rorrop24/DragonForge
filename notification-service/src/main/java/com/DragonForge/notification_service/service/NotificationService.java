@@ -63,4 +63,53 @@ public class NotificationService {
         notificacion.setLeida(true);
         return notificacionRepository.save(notificacion);
     }
+    public Optional<Buzon> buscarBuzon(Integer id) {
+        return buzonRepository.findById(id);
+    }
+
+    public Buzon actualizarBuzon(Integer id, Buzon datos) {
+        Buzon buzon = buzonRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Buzon no encontrado con ID: " + id));
+
+        buzon.setUsuarioId(datos.getUsuarioId());
+        buzon.setNombreJugador(datos.getNombreJugador());
+        return buzonRepository.save(buzon);
+    }
+
+    public void eliminarBuzon(Integer id) {
+        if (!buzonRepository.existsById(id)) {
+            throw new RuntimeException("Buzon no encontrado con ID: " + id);
+        }
+
+        buzonRepository.deleteById(id);
+    }
+
+    public Optional<Notificacion> buscarNotificacion(Integer id) {
+        return notificacionRepository.findById(id);
+    }
+
+    public Notificacion actualizarNotificacion(Integer id, Notificacion datos) {
+        Notificacion notificacion = notificacionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Notificacion no encontrada"));
+
+        notificacion.setTitulo(datos.getTitulo());
+        notificacion.setMensaje(datos.getMensaje());
+        notificacion.setLeida(datos.getLeida());
+
+        if (datos.getBuzon() != null && datos.getBuzon().getId() != null) {
+            Buzon buzon = buzonRepository.findById(datos.getBuzon().getId())
+                    .orElseThrow(() -> new RuntimeException("Buzon no encontrado con ID: " + datos.getBuzon().getId()));
+            notificacion.setBuzon(buzon);
+        }
+
+        return notificacionRepository.save(notificacion);
+    }
+
+    public void eliminarNotificacion(Integer id) {
+        if (!notificacionRepository.existsById(id)) {
+            throw new RuntimeException("Notificacion no encontrada");
+        }
+
+        notificacionRepository.deleteById(id);
+    }
 }

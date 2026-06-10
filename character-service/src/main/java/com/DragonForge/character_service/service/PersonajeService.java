@@ -69,6 +69,33 @@ public class PersonajeService {
         return convertToDTO(p);
     }
 
+    public PersonajeDTO actualizarPersonaje(Integer id, Personaje datos) {
+        log.info("Actualizando personaje con ID: {}", id);
+
+        Personaje existente = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Personaje no encontrado"));
+
+        existente.setNombrePersonaje(datos.getNombrePersonaje());
+        existente.setRaza(datos.getRaza());
+        existente.setClase(datos.getClase());
+        existente.setNivel(datos.getNivel());
+        existente.setPuntosGolpe(datos.getPuntosGolpe());
+        existente.setTrasfondo(datos.getTrasfondo());
+        existente.setVivo(datos.getVivo());
+
+        return convertToDTO(repository.save(existente));
+    }
+
+    public void eliminarPersonaje(Integer id) {
+        log.info("Eliminando personaje con ID: {}", id);
+
+        if (!repository.existsById(id)) {
+            throw new RuntimeException("Personaje no encontrado");
+        }
+
+        repository.deleteById(id);
+    }
+
     private PersonajeDTO convertToDTO(Personaje personaje) {
         PersonajeDTO dto = new PersonajeDTO();
         dto.setId(personaje.getId());

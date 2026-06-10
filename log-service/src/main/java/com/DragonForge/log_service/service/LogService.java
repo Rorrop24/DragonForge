@@ -42,4 +42,48 @@ public class LogService {
         entrada.setDiario(diario);
         return entradaRepository.save(entrada);
     }
+    public Diario actualizarDiario(Integer id, Diario datos) {
+        Diario diario = diarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Diario no encontrado con ID: " + id));
+
+        diario.setNombreCampana(datos.getNombreCampana());
+        diario.setDmAsignado(datos.getDmAsignado());
+        return diarioRepository.save(diario);
+    }
+
+    public void eliminarDiario(Integer id) {
+        if (!diarioRepository.existsById(id)) {
+            throw new RuntimeException("Diario no encontrado con ID: " + id);
+        }
+
+        diarioRepository.deleteById(id);
+    }
+
+    public Optional<Entrada> buscarEntrada(Integer id) {
+        return entradaRepository.findById(id);
+    }
+
+    public Entrada actualizarEntrada(Integer id, Entrada datos) {
+        Entrada entrada = entradaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Entrada no encontrada con ID: " + id));
+
+        entrada.setTipoEvento(datos.getTipoEvento());
+        entrada.setDescripcion(datos.getDescripcion());
+
+        if (datos.getDiario() != null && datos.getDiario().getId() != null) {
+            Diario diario = diarioRepository.findById(datos.getDiario().getId())
+                    .orElseThrow(() -> new RuntimeException("Diario no encontrado con ID: " + datos.getDiario().getId()));
+            entrada.setDiario(diario);
+        }
+
+        return entradaRepository.save(entrada);
+    }
+
+    public void eliminarEntrada(Integer id) {
+        if (!entradaRepository.existsById(id)) {
+            throw new RuntimeException("Entrada no encontrada con ID: " + id);
+        }
+
+        entradaRepository.deleteById(id);
+    }
 }

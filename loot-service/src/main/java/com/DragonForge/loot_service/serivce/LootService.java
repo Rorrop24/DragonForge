@@ -43,4 +43,55 @@ public class LootService {
     public List<Categoria> listarCategorias() {
         return categoriaRepository.findAll();
     }
+    public Item actualizarItem(Integer id, Item datos) {
+        Item item = itemRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Item no encontrado con ID: " + id));
+
+        item.setNombre(datos.getNombre());
+        item.setRareza(datos.getRareza());
+        item.setPeso(datos.getPeso());
+        item.setValorOro(datos.getValorOro());
+        item.setDanioOEfecto(datos.getDanioOEfecto());
+
+        if (datos.getCategoria() != null && datos.getCategoria().getId() != null) {
+            Categoria categoria = categoriaRepository.findById(datos.getCategoria().getId())
+                    .orElseThrow(() -> new RuntimeException("Categoria no encontrada con ID: " + datos.getCategoria().getId()));
+            item.setCategoria(categoria);
+        }
+
+        return itemRepository.save(item);
+    }
+
+    public void eliminarItem(Integer id) {
+        if (!itemRepository.existsById(id)) {
+            throw new RuntimeException("Item no encontrado con ID: " + id);
+        }
+
+        itemRepository.deleteById(id);
+    }
+
+    public Categoria crearCategoria(Categoria categoria) {
+        return categoriaRepository.save(categoria);
+    }
+
+    public Optional<Categoria> buscarCategoriaPorId(Integer id) {
+        return categoriaRepository.findById(id);
+    }
+
+    public Categoria actualizarCategoria(Integer id, Categoria datos) {
+        Categoria categoria = categoriaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Categoria no encontrada con ID: " + id));
+
+        categoria.setNombre(datos.getNombre());
+        categoria.setDescripcion(datos.getDescripcion());
+        return categoriaRepository.save(categoria);
+    }
+
+    public void eliminarCategoria(Integer id) {
+        if (!categoriaRepository.existsById(id)) {
+            throw new RuntimeException("Categoria no encontrada con ID: " + id);
+        }
+
+        categoriaRepository.deleteById(id);
+    }
 }
