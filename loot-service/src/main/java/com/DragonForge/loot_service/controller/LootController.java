@@ -7,12 +7,17 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/api/v1/loot")
@@ -24,30 +29,38 @@ public class LootController {
 
     @Operation(summary = "Obtiene el catálogo completo de todos los objetos y botín disponibles en el juego")
     @GetMapping("/items")
-    public ResponseEntity<List<Item>> listarItems() {
+    public ResponseEntity<CollectionModel<Item>> listarItems() {
         List<Item> items = lootService.listarTodosLosItems();
         if (items.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(items);
+        CollectionModel<Item> model = CollectionModel.of(items);
+        model.add(linkTo(methodOn(LootController.class).listarItems()).withSelfRel());
+        return ResponseEntity.ok(model);
     }
 
     @Operation(summary = "Busca los detalles, rareza y estadísticas de un objeto específico mediante su ID")
     @GetMapping("/items/{id}")
-    public ResponseEntity<Item> buscarItemPorId(@PathVariable Integer id) {
+    public ResponseEntity<EntityModel<Item>> buscarItemPorId(@PathVariable Integer id) {
         Optional<Item> item = lootService.buscarItemPorId(id);
-        return item.map(ResponseEntity::ok)
+        return item.map(value -> {
+                    EntityModel<Item> model = EntityModel.of(value);
+                    model.add(linkTo(methodOn(LootController.class).buscarItemPorId(id)).withSelfRel());
+                    return ResponseEntity.ok(model);
+                })
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @Operation(summary = "Filtra y lista todos los objetos que pertenecen a una categoría específica (ej: solo espadas o solo pociones)")
     @GetMapping("/items/categoria/{categoriaId}")
-    public ResponseEntity<List<Item>> listarPorCategoria(@PathVariable Integer categoriaId) {
+    public ResponseEntity<CollectionModel<Item>> listarPorCategoria(@PathVariable Integer categoriaId) {
         List<Item> items = lootService.buscarItemsPorCategoria(categoriaId);
         if (items.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(items);
+        CollectionModel<Item> model = CollectionModel.of(items);
+        model.add(linkTo(methodOn(LootController.class).listarPorCategoria(categoriaId)).withSelfRel());
+        return ResponseEntity.ok(model);
     }
 
     @Operation(summary = "Forja un nuevo objeto asignándole sus estadísticas y vinculándolo a una categoría existente")
@@ -63,13 +76,16 @@ public class LootController {
 
     @Operation(summary = "Obtiene el listado de todas las categorías en las que se clasifica el botín")
     @GetMapping("/categorias")
-    public ResponseEntity<List<Categoria>> listarCategorias() {
+    public ResponseEntity<CollectionModel<Categoria>> listarCategorias() {
         List<Categoria> categorias = lootService.listarCategorias();
         if (categorias.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(categorias);
+        CollectionModel<Categoria> model = CollectionModel.of(categorias);
+        model.add(linkTo(methodOn(LootController.class).listarCategorias()).withSelfRel());
+        return ResponseEntity.ok(model);
     }
+
     @Operation(summary = "Personaliza un objeto existente")
     @PutMapping("/items/{id}")
     public ResponseEntity<?> actualizarItem(@PathVariable Integer id, @Valid @RequestBody Item item) {
@@ -93,9 +109,13 @@ public class LootController {
 
     @Operation(summary = "Busca una categoria de botin mediante su ID")
     @GetMapping("/categorias/{id}")
-    public ResponseEntity<Categoria> buscarCategoria(@PathVariable Integer id) {
+    public ResponseEntity<EntityModel<Categoria>> buscarCategoria(@PathVariable Integer id) {
         Optional<Categoria> categoria = lootService.buscarCategoriaPorId(id);
-        return categoria.map(ResponseEntity::ok)
+        return categoria.map(value -> {
+                    EntityModel<Categoria> model = EntityModel.of(value);
+                    model.add(linkTo(methodOn(LootController.class).buscarCategoria(id)).withSelfRel());
+                    return ResponseEntity.ok(model);
+                })
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 

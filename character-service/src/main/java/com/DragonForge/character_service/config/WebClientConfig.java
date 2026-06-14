@@ -9,6 +9,6 @@ public class WebClientConfig {
 
     @Bean
     public WebClient webClient() {
-        return WebClient.builder().baseUrl("http://localhost:8088").build();
+        return WebClient.builder().baseUrl("http://localhost:8096").build();
     }
 }

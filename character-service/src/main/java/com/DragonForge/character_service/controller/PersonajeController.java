@@ -7,11 +7,16 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/api/v1/personajes")
@@ -23,20 +28,24 @@ public class PersonajeController {
 
     @Operation(summary = "Obtiene el listado completo de todos los personajes creados en la plataforma")
     @GetMapping
-    public ResponseEntity<List<PersonajeDTO>> listar() {
+    public ResponseEntity<CollectionModel<PersonajeDTO>> listar() {
         List<PersonajeDTO> list = service.listarTodos();
         if (list.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(list);
+        CollectionModel<PersonajeDTO> model = CollectionModel.of(list);
+        model.add(linkTo(methodOn(PersonajeController.class).listar()).withSelfRel());
+        return ResponseEntity.ok(model);
     }
 
     @Operation(summary = "Busca y recupera la hoja de personaje detallada mediante su ID único")
     @GetMapping("/{id}")
-    public ResponseEntity<PersonajeDTO> buscar(@PathVariable Integer id) {
+    public ResponseEntity<EntityModel<PersonajeDTO>> buscar(@PathVariable Integer id) {
         try {
             PersonajeDTO dto = service.buscarPorId(id);
-            return ResponseEntity.ok(dto);
+            EntityModel<PersonajeDTO> model = EntityModel.of(dto);
+            model.add(linkTo(methodOn(PersonajeController.class).buscar(id)).withSelfRel());
+            return ResponseEntity.ok(model);
         } catch (RuntimeException ex) {
             return ResponseEntity.notFound().build();
         }

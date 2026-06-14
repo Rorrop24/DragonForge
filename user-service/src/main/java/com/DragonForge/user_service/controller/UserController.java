@@ -7,12 +7,17 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -24,19 +29,25 @@ public class UserController {
 
     @Operation(summary = "Obtiene el listado completo de todos los usuarios (Jugadores y DMs) registrados en la plataforma")
     @GetMapping
-    public ResponseEntity<List<Usuario>> listarUsuarios() {
+    public ResponseEntity<CollectionModel<Usuario>> listarUsuarios() {
         List<Usuario> usuarios = userService.listarUsuarios();
         if (usuarios.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(usuarios);
+        CollectionModel<Usuario> model = CollectionModel.of(usuarios);
+        model.add(linkTo(methodOn(UserController.class).listarUsuarios()).withSelfRel());
+        return ResponseEntity.ok(model);
     }
 
     @Operation(summary = "Busca los datos de perfil de un usuario específico mediante su ID")
     @GetMapping("/{id}")
-    public ResponseEntity<Usuario> buscarUsuario(@PathVariable Integer id) {
+    public ResponseEntity<EntityModel<Usuario>> buscarUsuario(@PathVariable Integer id) {
         Optional<Usuario> usuario = userService.buscarUsuario(id);
-        return usuario.map(ResponseEntity::ok)
+        return usuario.map(value -> {
+                    EntityModel<Usuario> model = EntityModel.of(value);
+                    model.add(linkTo(methodOn(UserController.class).buscarUsuario(id)).withSelfRel());
+                    return ResponseEntity.ok(model);
+                })
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
@@ -49,12 +60,14 @@ public class UserController {
 
     @Operation(summary = "Lista todas las campañas de Dungeons & Dragons en las que participa o que dirige un usuario específico")
     @GetMapping("/{id}/campanas")
-    public ResponseEntity<List<Campana>> listarCampanas(@PathVariable Integer id) {
+    public ResponseEntity<CollectionModel<Campana>> listarCampanas(@PathVariable Integer id) {
         List<Campana> campanas = userService.verCampanasDeUsuario(id);
         if (campanas.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(campanas);
+        CollectionModel<Campana> model = CollectionModel.of(campanas);
+        model.add(linkTo(methodOn(UserController.class).listarCampanas(id)).withSelfRel());
+        return ResponseEntity.ok(model);
     }
 
     @Operation(summary = "Crea y vincula una nueva campaña de rol al perfil de un usuario")
@@ -67,6 +80,7 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
     }
+
     @Operation(summary = "Personaliza los datos de un usuario existente")
     @PutMapping("/{id}")
     public ResponseEntity<Usuario> actualizarUsuario(@PathVariable Integer id, @Valid @RequestBody Usuario usuario) {
@@ -90,9 +104,13 @@ public class UserController {
 
     @Operation(summary = "Busca una campana mediante su ID")
     @GetMapping("/campanas/{id}")
-    public ResponseEntity<Campana> buscarCampana(@PathVariable Integer id) {
+    public ResponseEntity<EntityModel<Campana>> buscarCampana(@PathVariable Integer id) {
         Optional<Campana> campana = userService.buscarCampana(id);
-        return campana.map(ResponseEntity::ok)
+        return campana.map(value -> {
+                    EntityModel<Campana> model = EntityModel.of(value);
+                    model.add(linkTo(methodOn(UserController.class).buscarCampana(id)).withSelfRel());
+                    return ResponseEntity.ok(model);
+                })
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 

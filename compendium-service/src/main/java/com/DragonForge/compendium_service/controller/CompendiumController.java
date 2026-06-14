@@ -7,12 +7,17 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/api/v1/compendium")
@@ -24,12 +29,14 @@ public class CompendiumController {
 
     @Operation(summary = "Obtiene el listado de todas las categorías del compendio (ej: Monstruos, Hechizos, Objetos)")
     @GetMapping("/categorias")
-    public ResponseEntity<List<CategoriaCompendio>> listarCategorias() {
+    public ResponseEntity<CollectionModel<CategoriaCompendio>> listarCategorias() {
         List<CategoriaCompendio> categorias = compendiumService.listarCategorias();
         if (categorias.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(categorias);
+        CollectionModel<CategoriaCompendio> model = CollectionModel.of(categorias);
+        model.add(linkTo(methodOn(CompendiumController.class).listarCategorias()).withSelfRel());
+        return ResponseEntity.ok(model);
     }
 
     @Operation(summary = "Crea una nueva categoría maestra para organizar el conocimiento")
@@ -41,30 +48,38 @@ public class CompendiumController {
 
     @Operation(summary = "Obtiene el listado completo de todas las entradas (todo el lore y bestiario mezclado)")
     @GetMapping("/entradas")
-    public ResponseEntity<List<EntradaCompendio>> listarTodasLasEntradas() {
+    public ResponseEntity<CollectionModel<EntradaCompendio>> listarTodasLasEntradas() {
         List<EntradaCompendio> entradas = compendiumService.listarTodasLasEntradas();
         if (entradas.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(entradas);
+        CollectionModel<EntradaCompendio> model = CollectionModel.of(entradas);
+        model.add(linkTo(methodOn(CompendiumController.class).listarTodasLasEntradas()).withSelfRel());
+        return ResponseEntity.ok(model);
     }
 
     @Operation(summary = "Busca los detalles completos de una entrada específica (ej: estadísticas de un Dragón) mediante su ID")
     @GetMapping("/entradas/{id}")
-    public ResponseEntity<EntradaCompendio> buscarEntrada(@PathVariable Integer id) {
+    public ResponseEntity<EntityModel<EntradaCompendio>> buscarEntrada(@PathVariable Integer id) {
         Optional<EntradaCompendio> entrada = compendiumService.buscarEntradaPorId(id);
-        return entrada.map(ResponseEntity::ok)
+        return entrada.map(value -> {
+                    EntityModel<EntradaCompendio> model = EntityModel.of(value);
+                    model.add(linkTo(methodOn(CompendiumController.class).buscarEntrada(id)).withSelfRel());
+                    return ResponseEntity.ok(model);
+                })
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @Operation(summary = "Filtra y lista únicamente las entradas que pertenecen a una categoría específica")
     @GetMapping("/categorias/{id}/entradas")
-    public ResponseEntity<List<EntradaCompendio>> buscarPorCategoria(@PathVariable Integer id) {
+    public ResponseEntity<CollectionModel<EntradaCompendio>> buscarPorCategoria(@PathVariable Integer id) {
         List<EntradaCompendio> entradas = compendiumService.buscarEntradasPorCategoria(id);
         if (entradas.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(entradas);
+        CollectionModel<EntradaCompendio> model = CollectionModel.of(entradas);
+        model.add(linkTo(methodOn(CompendiumController.class).buscarPorCategoria(id)).withSelfRel());
+        return ResponseEntity.ok(model);
     }
 
     @Operation(summary = "Registra una nueva entrada (monstruo, regla, hechizo) asociándola directamente a una categoría")
@@ -77,6 +92,7 @@ public class CompendiumController {
             return ResponseEntity.notFound().build();
         }
     }
+
     @Operation(summary = "Personaliza una categoria del compendio")
     @PutMapping("/categorias/{id}")
     public ResponseEntity<CategoriaCompendio> actualizarCategoria(@PathVariable Integer id, @Valid @RequestBody CategoriaCompendio categoria) {

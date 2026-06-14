@@ -7,12 +7,17 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/api/v1/assets")
@@ -24,12 +29,14 @@ public class AssetController {
 
     @Operation(summary = "Obtiene el listado completo de todas las carpetas (ej: Mapas de Mazmorras, Tokens de Enemigos)")
     @GetMapping("/carpetas")
-    public ResponseEntity<List<CarpetaActivo>> listarCarpetas() {
+    public ResponseEntity<CollectionModel<CarpetaActivo>> listarCarpetas() {
         List<CarpetaActivo> carpetas = assetService.listarCarpetas();
         if (carpetas.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(carpetas);
+        CollectionModel<CarpetaActivo> model = CollectionModel.of(carpetas);
+        model.add(linkTo(methodOn(AssetController.class).listarCarpetas()).withSelfRel());
+        return ResponseEntity.ok(model);
     }
 
     @Operation(summary = "Crea una nueva carpeta para organizar los recursos multimedia")
@@ -62,19 +69,25 @@ public class AssetController {
 
     @Operation(summary = "Lista todos los archivos (imágenes, sonidos, etc.) contenidos dentro de una carpeta específica")
     @GetMapping("/carpetas/{id}/archivos")
-    public ResponseEntity<List<ArchivoActivo>> listarArchivos(@PathVariable Integer id) {
+    public ResponseEntity<CollectionModel<ArchivoActivo>> listarArchivos(@PathVariable Integer id) {
         List<ArchivoActivo> archivos = assetService.listarArchivosDeCarpeta(id);
         if (archivos.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(archivos);
+        CollectionModel<ArchivoActivo> model = CollectionModel.of(archivos);
+        model.add(linkTo(methodOn(AssetController.class).listarArchivos(id)).withSelfRel());
+        return ResponseEntity.ok(model);
     }
 
     @Operation(summary = "Busca un archivo por ID")
     @GetMapping("/archivos/{id}")
-    public ResponseEntity<ArchivoActivo> buscarArchivo(@PathVariable Integer id) {
+    public ResponseEntity<EntityModel<ArchivoActivo>> buscarArchivo(@PathVariable Integer id) {
         Optional<ArchivoActivo> archivo = assetService.buscarArchivo(id);
-        return archivo.map(ResponseEntity::ok)
+        return archivo.map(value -> {
+                    EntityModel<ArchivoActivo> model = EntityModel.of(value);
+                    model.add(linkTo(methodOn(AssetController.class).buscarArchivo(id)).withSelfRel());
+                    return ResponseEntity.ok(model);
+                })
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 

@@ -7,12 +7,16 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/api/v1/maps")
@@ -24,19 +28,25 @@ public class MapController {
 
     @Operation(summary = "Obtiene el catálogo completo de todos los mapas creados para las campañas")
     @GetMapping
-    public ResponseEntity<List<Mapa>> listarMapas() {
+    public ResponseEntity<EntityModel<List<Mapa>>> listarMapas() {
         List<Mapa> mapas = mapService.listarMapas();
         if (mapas.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(mapas);
+        EntityModel<List<Mapa>> model = EntityModel.of(mapas);
+        model.add(linkTo(methodOn(MapController.class).listarMapas()).withSelfRel());
+        return ResponseEntity.ok(model);
     }
 
     @Operation(summary = "Busca la información detallada de un mapa específico mediante su ID")
     @GetMapping("/{id}")
-    public ResponseEntity<Mapa> buscarMapa(@PathVariable Integer id) {
+    public ResponseEntity<EntityModel<Mapa>> buscarMapa(@PathVariable Integer id) {
         Optional<Mapa> mapa = mapService.buscarMapa(id);
-        return mapa.map(ResponseEntity::ok)
+        return mapa.map(value -> {
+                    EntityModel<Mapa> model = EntityModel.of(value);
+                    model.add(linkTo(methodOn(MapController.class).buscarMapa(id)).withSelfRel());
+                    return ResponseEntity.ok(model);
+                })
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
@@ -49,12 +59,14 @@ public class MapController {
 
     @Operation(summary = "Lista todos los puntos de interés (ciudades, tabernas, trampas) vinculados a un mapa específico")
     @GetMapping("/{id}/ubicaciones")
-    public ResponseEntity<List<Ubicacion>> listarUbicaciones(@PathVariable Integer id) {
+    public ResponseEntity<EntityModel<List<Ubicacion>>> listarUbicaciones(@PathVariable Integer id) {
         List<Ubicacion> ubicaciones = mapService.listarUbicacionesDeMapa(id);
         if (ubicaciones.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(ubicaciones);
+        EntityModel<List<Ubicacion>> model = EntityModel.of(ubicaciones);
+        model.add(linkTo(methodOn(MapController.class).listarUbicaciones(id)).withSelfRel());
+        return ResponseEntity.ok(model);
     }
 
     @Operation(summary = "Registra una nueva ubicación o punto de interés dentro de un mapa existente")
@@ -90,9 +102,13 @@ public class MapController {
 
     @Operation(summary = "Busca una ubicacion mediante su ID")
     @GetMapping("/ubicaciones/{id}")
-    public ResponseEntity<Ubicacion> buscarUbicacion(@PathVariable Integer id) {
+    public ResponseEntity<EntityModel<Ubicacion>> buscarUbicacion(@PathVariable Integer id) {
         Optional<Ubicacion> ubicacion = mapService.buscarUbicacion(id);
-        return ubicacion.map(ResponseEntity::ok)
+        return ubicacion.map(value -> {
+                    EntityModel<Ubicacion> model = EntityModel.of(value);
+                    model.add(linkTo(methodOn(MapController.class).buscarUbicacion(id)).withSelfRel());
+                    return ResponseEntity.ok(model);
+                })
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 

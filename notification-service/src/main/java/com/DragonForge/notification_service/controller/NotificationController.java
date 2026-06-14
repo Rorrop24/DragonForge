@@ -7,12 +7,17 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/api/v1/notifications")
@@ -24,9 +29,14 @@ public class NotificationController {
 
     @Operation(summary = "Obtiene una lista de todos los buzones de mensajería creados en el sistema")
     @GetMapping("/buzones")
-    public ResponseEntity<List<Buzon>> listarBuzones() {
+    public ResponseEntity<CollectionModel<Buzon>> listarBuzones() {
         List<Buzon> buzones = notificationService.listarBuzones();
-        return buzones.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(buzones);
+        if (buzones.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        CollectionModel<Buzon> model = CollectionModel.of(buzones);
+        model.add(linkTo(methodOn(NotificationController.class).listarBuzones()).withSelfRel());
+        return ResponseEntity.ok(model);
     }
 
     @Operation(summary = "Crea un nuevo buzón de notificaciones (idealmente al registrar un nuevo usuario en la plataforma)")
@@ -38,23 +48,37 @@ public class NotificationController {
 
     @Operation(summary = "Busca y recupera el buzón de notificaciones asociado a la ID de un usuario específico")
     @GetMapping("/buzones/usuario/{usuarioId}")
-    public ResponseEntity<Buzon> buscarPorUsuarioId(@PathVariable Integer usuarioId) {
+    public ResponseEntity<EntityModel<Buzon>> buscarPorUsuarioId(@PathVariable Integer usuarioId) {
         Optional<Buzon> buzon = notificationService.buscarBuzonPorUsuarioId(usuarioId);
-        return buzon.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        return buzon.map(value -> {
+            EntityModel<Buzon> model = EntityModel.of(value);
+            model.add(linkTo(methodOn(NotificationController.class).buscarPorUsuarioId(usuarioId)).withSelfRel());
+            return ResponseEntity.ok(model);
+        }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @Operation(summary = "Lista todos los mensajes y alertas de juego guardados en un buzón específico")
     @GetMapping("/buzones/{buzonId}/mensajes")
-    public ResponseEntity<List<Notificacion>> listarNotificaciones(@PathVariable Integer buzonId) {
+    public ResponseEntity<CollectionModel<Notificacion>> listarNotificaciones(@PathVariable Integer buzonId) {
         List<Notificacion> notificaciones = notificationService.listarNotificaciones(buzonId);
-        return notificaciones.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(notificaciones);
+        if (notificaciones.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        CollectionModel<Notificacion> model = CollectionModel.of(notificaciones);
+        model.add(linkTo(methodOn(NotificationController.class).listarNotificaciones(buzonId)).withSelfRel());
+        return ResponseEntity.ok(model);
     }
 
     @Operation(summary = "Filtra y lista únicamente los mensajes que aún no han sido leídos por el jugador")
     @GetMapping("/buzones/{buzonId}/mensajes/noleidos")
-    public ResponseEntity<List<Notificacion>> listarNoLeidas(@PathVariable Integer buzonId) {
+    public ResponseEntity<CollectionModel<Notificacion>> listarNoLeidas(@PathVariable Integer buzonId) {
         List<Notificacion> noLeidas = notificationService.listarNotificacionesNoLeidas(buzonId);
-        return noLeidas.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(noLeidas);
+        if (noLeidas.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        CollectionModel<Notificacion> model = CollectionModel.of(noLeidas);
+        model.add(linkTo(methodOn(NotificationController.class).listarNoLeidas(buzonId)).withSelfRel());
+        return ResponseEntity.ok(model);
     }
 
     @Operation(summary = "Envía una nueva notificación a un buzón (ej: 'Es tu turno', 'Pifia crítica' o 'Recibiste 10 puntos de daño')")
@@ -78,11 +102,16 @@ public class NotificationController {
             return ResponseEntity.notFound().build();
         }
     }
+
     @Operation(summary = "Busca un buzon mediante su ID")
     @GetMapping("/buzones/{id}")
-    public ResponseEntity<Buzon> buscarBuzon(@PathVariable Integer id) {
+    public ResponseEntity<EntityModel<Buzon>> buscarBuzon(@PathVariable Integer id) {
         Optional<Buzon> buzon = notificationService.buscarBuzon(id);
-        return buzon.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        return buzon.map(value -> {
+            EntityModel<Buzon> model = EntityModel.of(value);
+            model.add(linkTo(methodOn(NotificationController.class).buscarBuzon(id)).withSelfRel());
+            return ResponseEntity.ok(model);
+        }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @Operation(summary = "Personaliza un buzon existente")
@@ -108,9 +137,13 @@ public class NotificationController {
 
     @Operation(summary = "Busca una notificacion mediante su ID")
     @GetMapping("/mensajes/{id}")
-    public ResponseEntity<Notificacion> buscarNotificacion(@PathVariable Integer id) {
+    public ResponseEntity<EntityModel<Notificacion>> buscarNotificacion(@PathVariable Integer id) {
         Optional<Notificacion> notificacion = notificationService.buscarNotificacion(id);
-        return notificacion.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        return notificacion.map(value -> {
+            EntityModel<Notificacion> model = EntityModel.of(value);
+            model.add(linkTo(methodOn(NotificationController.class).buscarNotificacion(id)).withSelfRel());
+            return ResponseEntity.ok(model);
+        }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @Operation(summary = "Personaliza una notificacion existente")
