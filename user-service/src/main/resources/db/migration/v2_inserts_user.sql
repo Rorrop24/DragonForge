@@ -1,0 +1,2 @@
+INSERT INTO usuarios (username, email, password) VALUES ('DungeonMaster99', 'dm@dragonforge.com', '123456');
+INSERT INTO campanas (nombre, descripcion, dungeon_master_id) VALUES ('La Mina Perdida de Phandelver', 'Campaña inicial para novatos', 1);

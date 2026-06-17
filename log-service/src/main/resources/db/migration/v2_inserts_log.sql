@@ -1,0 +1,2 @@
+INSERT INTO diarios (nombre_campana, dm_asignado) VALUES ('La Mina Perdida de Phandelver', 'DungeonMaster99');
+INSERT INTO entradas (tipo_evento, descripcion, diario_id) VALUES ('Combate', 'El grupo fue emboscado por goblins en el camino.', 1);
