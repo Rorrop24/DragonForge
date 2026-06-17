@@ -17,7 +17,7 @@ public class UserClient {
                     .uri("/api/v1/usuarios/{id}", id)
                     .retrieve()
                     .bodyToMono(UsuarioDTO.class)
-                    .block(); // Esperamos la respuesta síncrona
+                    .block();
         } catch (Exception e) {
             throw new RuntimeException("Error No se pudo obtener el usuario con ID " + id);
         }

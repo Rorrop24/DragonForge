@@ -34,7 +34,7 @@ public class DiceController {
         RollResultDTO result = diceService.roll(sides, count, modifier);
         EntityModel<RollResultDTO> model = EntityModel.of(result);
         model.add(linkTo(methodOn(DiceController.class).rollDice(sides, count, modifier)).withSelfRel());
-        return ResponseEntity.ok(model); // 200 OK
+        return ResponseEntity.ok(model);
     }
 
     @Operation(summary = "Consulta el historial de las últimas tiradas realizadas, ideal para revisar pifias críticas o éxitos épicos")
@@ -42,7 +42,7 @@ public class DiceController {
     public ResponseEntity<CollectionModel<Tirada>> verHistorial() {
         List<Tirada> historial = diceService.obtenerHistorial();
         if(historial.isEmpty()) {
-            return ResponseEntity.noContent().build(); // 204 No Content
+            return ResponseEntity.noContent().build();
         }
         CollectionModel<Tirada> model = CollectionModel.of(historial);
         model.add(linkTo(methodOn(DiceController.class).verHistorial()).withSelfRel());

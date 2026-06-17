@@ -36,7 +36,6 @@ public class PersonajeService {
             log.warn("El rng-service no respondió. Asignando 15 puntos de golpe por defecto al personaje: {}", personaje.getNombrePersonaje());
         }
 
-        // Guardamos en la base de datos
         Personaje guardado = repository.save(personaje);
 
         log.info("Personaje '{}' creado y guardado en la base de datos con ID: {}", guardado.getNombrePersonaje(), guardado.getId());
@@ -60,7 +59,6 @@ public class PersonajeService {
 
         Personaje p = repository.findById(id)
                 .orElseThrow(() -> {
-                    // LOG DE ERROR: Queda registro exacto si alguien busca un ID fantasma
                     log.error("Error en la búsqueda: No se encontró ningún personaje con el ID {}", id);
                     return new RuntimeException("Personaje no encontrado");
                 });
