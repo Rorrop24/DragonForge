@@ -3,9 +3,9 @@
 ## 📖 Contexto y Dominio del Proyecto
 **DragonForge** es una plataforma integral diseñada para la gestión de partidas de rol (específicamente Dungeons & Dragons). El sistema permite administrar de manera distribuida a los jugadores (Usuarios), sus Héroes (Personajes), el inventario (Loot), la construcción del mundo (Mapas y Wiki), y la simulación matemática de eventos (RNG/Dados), entre otros. Toda la arquitectura está construida bajo un ecosistema de microservicios independientes, comunicados a través de un API Gateway y registrados dinámicamente mediante Eureka Server.
 
-## 👥 Equipo de Desarrollo
-* Rodrigo (Ror)
-* [Nombre de tu compañero/a]
+## 👥 El gran Equipo de Desarrollo
+* Rodrigo Catalan (Ror)
+* [Jose Quezada (XxCamPasteroXx)]
 
 ---
 
