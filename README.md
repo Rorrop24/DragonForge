@@ -5,7 +5,7 @@
 
 ## 👥 El gran Equipo de Desarrollo
 * Rodrigo Catalan (Ror)
-* [Jose Quezada (XxCamPasteroXx)]
+* Jose Quezada (XxCamPasteroXx)
 
 ---
 
