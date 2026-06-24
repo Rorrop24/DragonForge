@@ -4,6 +4,8 @@ import com.DragonForge.map_service.model.Mapa;
 import com.DragonForge.map_service.model.Ubicacion;
 import com.DragonForge.map_service.service.MapService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,13 +22,20 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/api/v1/maps")
-@Tag(name = "Cartografía y Mapas", description = "Operaciones para gestionar mapas del mundo, mazmorras y puntos de interés geográfico")
+@Tag(name = "Cartografia y Mapas", description = "Operaciones para gestionar mapas del mundo, mazmorras y puntos de interes geografico")
+@ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Operacion realizada correctamente"),
+        @ApiResponse(responseCode = "201", description = "Recurso creado correctamente"),
+        @ApiResponse(responseCode = "204", description = "Solicitud procesada sin contenido"),
+        @ApiResponse(responseCode = "400", description = "Solicitud invalida"),
+        @ApiResponse(responseCode = "404", description = "Recurso no encontrado")
+})
 public class MapController {
 
     @Autowired
     private MapService mapService;
 
-    @Operation(summary = "Obtiene el catálogo completo de todos los mapas creados para las campañas")
+    @Operation(summary = "Obtiene el catalogo completo de todos los mapas creados para las campanas")
     @GetMapping
     public ResponseEntity<EntityModel<List<Mapa>>> listarMapas() {
         List<Mapa> mapas = mapService.listarMapas();
@@ -38,7 +47,7 @@ public class MapController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Busca la información detallada de un mapa específico mediante su ID")
+    @Operation(summary = "Busca la informacion detallada de un mapa especifico mediante su ID")
     @GetMapping("/{id}")
     public ResponseEntity<EntityModel<Mapa>> buscarMapa(@PathVariable Integer id) {
         Optional<Mapa> mapa = mapService.buscarMapa(id);
@@ -57,7 +66,7 @@ public class MapController {
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoMapa);
     }
 
-    @Operation(summary = "Lista todos los puntos de interés (ciudades, tabernas, trampas) vinculados a un mapa específico")
+    @Operation(summary = "Lista todos los puntos de interes (ciudades, tabernas, trampas) vinculados a un mapa especifico")
     @GetMapping("/{id}/ubicaciones")
     public ResponseEntity<EntityModel<List<Ubicacion>>> listarUbicaciones(@PathVariable Integer id) {
         List<Ubicacion> ubicaciones = mapService.listarUbicacionesDeMapa(id);
@@ -69,7 +78,7 @@ public class MapController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Registra una nueva ubicación o punto de interés dentro de un mapa existente")
+    @Operation(summary = "Registra una nueva ubicacion o punto de interes dentro de un mapa existente")
     @PostMapping("/{id}/ubicaciones")
     public ResponseEntity<?> agregarUbicacion(@PathVariable Integer id, @Valid @RequestBody Ubicacion ubicacion) {
         try {

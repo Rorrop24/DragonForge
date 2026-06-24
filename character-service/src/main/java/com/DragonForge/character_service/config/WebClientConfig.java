@@ -1,5 +1,6 @@
 package com.DragonForge.character_service.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -8,7 +9,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class WebClientConfig {
 
     @Bean
-    public WebClient webClient() {
-        return WebClient.builder().baseUrl("http://localhost:8096").build();
+    public WebClient webClient(@Value("${services.rng.url:http://localhost:8096}") String rngServiceUrl) {
+        return WebClient.builder().baseUrl(rngServiceUrl).build();
     }
 }

@@ -4,6 +4,8 @@ import com.DragonForge.log_service.model.Diario;
 import com.DragonForge.log_service.model.Entrada;
 import com.DragonForge.log_service.service.LogService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,13 +23,20 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/api/v1/logs")
-@Tag(name = "Diario de Aventuras", description = "Operaciones para gestionar los diarios de campaña y el registro de eventos, decisiones o combates")
+@Tag(name = "Diario de Aventuras", description = "Operaciones para gestionar los diarios de campana y el registro de eventos, decisiones o combates")
+@ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Operacion realizada correctamente"),
+        @ApiResponse(responseCode = "201", description = "Recurso creado correctamente"),
+        @ApiResponse(responseCode = "204", description = "Solicitud procesada sin contenido"),
+        @ApiResponse(responseCode = "400", description = "Solicitud invalida"),
+        @ApiResponse(responseCode = "404", description = "Recurso no encontrado")
+})
 public class LogController {
 
     @Autowired
     private LogService logService;
 
-    @Operation(summary = "Obtiene el listado completo de todos los diarios de campaña activos")
+    @Operation(summary = "Obtiene el listado completo de todos los diarios de campana activos")
     @GetMapping("/diarios")
     public ResponseEntity<CollectionModel<Diario>> listarDiarios() {
         List<Diario> diarios = logService.listarDiarios();
@@ -39,7 +48,7 @@ public class LogController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Busca los detalles de un diario de aventuras específico mediante su ID")
+    @Operation(summary = "Busca los detalles de un diario de aventuras especifico mediante su ID")
     @GetMapping("/diarios/{id}")
     public ResponseEntity<EntityModel<Diario>> buscarDiario(@PathVariable Integer id) {
         Optional<Diario> diario = logService.buscarDiario(id);
@@ -51,14 +60,14 @@ public class LogController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @Operation(summary = "Inicia un nuevo diario de aventuras para una campaña o grupo de jugadores")
+    @Operation(summary = "Inicia un nuevo diario de aventuras para una campana o grupo de jugadores")
     @PostMapping("/diarios")
     public ResponseEntity<Diario> crearDiario(@Valid @RequestBody Diario diario) {
         Diario nuevoDiario = logService.crearDiario(diario);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoDiario);
     }
 
-    @Operation(summary = "Lista cronológicamente todas las entradas (eventos, notas, historia) escritas en un diario")
+    @Operation(summary = "Lista cronologicamente todas las entradas (eventos, notas, historia) escritas en un diario")
     @GetMapping("/diarios/{id}/entradas")
     public ResponseEntity<CollectionModel<Entrada>> verEntradas(@PathVariable Integer id) {
         List<Entrada> entradas = logService.verEntradasDeDiario(id);
@@ -70,7 +79,7 @@ public class LogController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Registra una nueva entrada en el diario (ej: daño recibido, botín encontrado o progreso de la historia)")
+    @Operation(summary = "Registra una nueva entrada en el diario (ej: dano recibido, botin encontrado o progreso de la historia)")
     @PostMapping("/diarios/{id}/entradas")
     public ResponseEntity<?> agregarEntrada(@PathVariable Integer id, @Valid @RequestBody Entrada entrada) {
         try {

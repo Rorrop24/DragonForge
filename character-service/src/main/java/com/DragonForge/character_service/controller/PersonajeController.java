@@ -4,6 +4,8 @@ import com.DragonForge.character_service.dto.PersonajeDTO;
 import com.DragonForge.character_service.model.Personaje;
 import com.DragonForge.character_service.service.PersonajeService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +22,14 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/api/v1/personajes")
-@Tag(name = "Personajes", description = "Operaciones para gestionar las hojas de personaje de Dungeons & Dragons (estadísticas, clases, razas)")
+@Tag(name = "Personajes", description = "Operaciones para gestionar las hojas de personaje de Dungeons & Dragons (estadisticas, clases, razas)")
+@ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Operacion realizada correctamente"),
+        @ApiResponse(responseCode = "201", description = "Recurso creado correctamente"),
+        @ApiResponse(responseCode = "204", description = "Solicitud procesada sin contenido"),
+        @ApiResponse(responseCode = "400", description = "Solicitud invalida"),
+        @ApiResponse(responseCode = "404", description = "Recurso no encontrado")
+})
 public class PersonajeController {
 
     @Autowired
@@ -38,7 +47,7 @@ public class PersonajeController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Busca y recupera la hoja de personaje detallada mediante su ID único")
+    @Operation(summary = "Busca y recupera la hoja de personaje detallada mediante su ID unico")
     @GetMapping("/{id}")
     public ResponseEntity<EntityModel<PersonajeDTO>> buscar(@PathVariable Integer id) {
         try {
@@ -51,7 +60,7 @@ public class PersonajeController {
         }
     }
 
-    @Operation(summary = "Forja un nuevo personaje asignándole su raza, clase y estadísticas base")
+    @Operation(summary = "Forja un nuevo personaje asignandole su raza, clase y estadisticas base")
     @PostMapping
     public ResponseEntity<PersonajeDTO> registrar(@Valid @RequestBody Personaje personaje) {
         PersonajeDTO nuevo = service.crearPersonaje(personaje);

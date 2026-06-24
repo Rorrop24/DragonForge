@@ -4,6 +4,8 @@ import com.DragonForge.user_service.model.Campana;
 import com.DragonForge.user_service.model.Usuario;
 import com.DragonForge.user_service.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +23,14 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/api/v1/users")
-@Tag(name = "Usuarios y Campañas", description = "Operaciones para gestionar las cuentas de Jugadores, Dungeon Masters y sus campañas de juego activas")
+@Tag(name = "Usuarios y Campanas", description = "Operaciones para gestionar las cuentas de Jugadores, Dungeon Masters y sus campanas de juego activas")
+@ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Operacion realizada correctamente"),
+        @ApiResponse(responseCode = "201", description = "Recurso creado correctamente"),
+        @ApiResponse(responseCode = "204", description = "Solicitud procesada sin contenido"),
+        @ApiResponse(responseCode = "400", description = "Solicitud invalida"),
+        @ApiResponse(responseCode = "404", description = "Recurso no encontrado")
+})
 public class UserController {
 
     @Autowired
@@ -39,7 +48,7 @@ public class UserController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Busca los datos de perfil de un usuario específico mediante su ID")
+    @Operation(summary = "Busca los datos de perfil de un usuario especifico mediante su ID")
     @GetMapping("/{id}")
     public ResponseEntity<EntityModel<Usuario>> buscarUsuario(@PathVariable Integer id) {
         Optional<Usuario> usuario = userService.buscarUsuario(id);
@@ -58,7 +67,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoUsuario);
     }
 
-    @Operation(summary = "Lista todas las campañas de Dungeons & Dragons en las que participa o que dirige un usuario específico")
+    @Operation(summary = "Lista todas las campanas de Dungeons & Dragons en las que participa o que dirige un usuario especifico")
     @GetMapping("/{id}/campanas")
     public ResponseEntity<CollectionModel<Campana>> listarCampanas(@PathVariable Integer id) {
         List<Campana> campanas = userService.verCampanasDeUsuario(id);
@@ -70,7 +79,7 @@ public class UserController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Crea y vincula una nueva campaña de rol al perfil de un usuario")
+    @Operation(summary = "Crea y vincula una nueva campana de rol al perfil de un usuario")
     @PostMapping("/{id}/campanas")
     public ResponseEntity<?> agregarCampana(@PathVariable Integer id, @Valid @RequestBody Campana campana) {
         try {

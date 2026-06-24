@@ -4,6 +4,8 @@ import com.DragonForge.loot_service.model.Categoria;
 import com.DragonForge.loot_service.model.Item;
 import com.DragonForge.loot_service.service.LootService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,13 +23,20 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/api/v1/loot")
-@Tag(name = "Inventario y Botín", description = "Operaciones para gestionar armas, armaduras, pociones y otras categorías de objetos mágicos o mundanos")
+@Tag(name = "Inventario y Botin", description = "Operaciones para gestionar armas, armaduras, pociones y otras categorias de objetos magicos o mundanos")
+@ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Operacion realizada correctamente"),
+        @ApiResponse(responseCode = "201", description = "Recurso creado correctamente"),
+        @ApiResponse(responseCode = "204", description = "Solicitud procesada sin contenido"),
+        @ApiResponse(responseCode = "400", description = "Solicitud invalida"),
+        @ApiResponse(responseCode = "404", description = "Recurso no encontrado")
+})
 public class LootController {
 
     @Autowired
     private LootService lootService;
 
-    @Operation(summary = "Obtiene el catálogo completo de todos los objetos y botín disponibles en el juego")
+    @Operation(summary = "Obtiene el catalogo completo de todos los objetos y botin disponibles en el juego")
     @GetMapping("/items")
     public ResponseEntity<CollectionModel<Item>> listarItems() {
         List<Item> items = lootService.listarTodosLosItems();
@@ -39,7 +48,7 @@ public class LootController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Busca los detalles, rareza y estadísticas de un objeto específico mediante su ID")
+    @Operation(summary = "Busca los detalles, rareza y estadisticas de un objeto especifico mediante su ID")
     @GetMapping("/items/{id}")
     public ResponseEntity<EntityModel<Item>> buscarItemPorId(@PathVariable Integer id) {
         Optional<Item> item = lootService.buscarItemPorId(id);
@@ -51,7 +60,7 @@ public class LootController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @Operation(summary = "Filtra y lista todos los objetos que pertenecen a una categoría específica (ej: solo espadas o solo pociones)")
+    @Operation(summary = "Filtra y lista todos los objetos que pertenecen a una categoria especifica (ej: solo espadas o solo pociones)")
     @GetMapping("/items/categoria/{categoriaId}")
     public ResponseEntity<CollectionModel<Item>> listarPorCategoria(@PathVariable Integer categoriaId) {
         List<Item> items = lootService.buscarItemsPorCategoria(categoriaId);
@@ -63,7 +72,7 @@ public class LootController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Forja un nuevo objeto asignándole sus estadísticas y vinculándolo a una categoría existente")
+    @Operation(summary = "Forja un nuevo objeto asignandole sus estadisticas y vinculandolo a una categoria existente")
     @PostMapping("/items")
     public ResponseEntity<?> crearItem(@Valid @RequestBody Item item) {
         try {
@@ -74,7 +83,7 @@ public class LootController {
         }
     }
 
-    @Operation(summary = "Obtiene el listado de todas las categorías en las que se clasifica el botín")
+    @Operation(summary = "Obtiene el listado de todas las categorias en las que se clasifica el botin")
     @GetMapping("/categorias")
     public ResponseEntity<CollectionModel<Categoria>> listarCategorias() {
         List<Categoria> categorias = lootService.listarCategorias();

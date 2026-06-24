@@ -4,6 +4,8 @@ import com.DragonForge.asset_service.model.ArchivoActivo;
 import com.DragonForge.asset_service.model.CarpetaActivo;
 import com.DragonForge.asset_service.service.AssetService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +23,14 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/api/v1/assets")
-@Tag(name = "Recursos Multimedia", description = "Operaciones para gestionar imágenes de mapas, avatares de jugadores y tokens de monstruos")
+@Tag(name = "Recursos Multimedia", description = "Operaciones para gestionar imagenes de mapas, avatares de jugadores y tokens de monstruos")
+@ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Operacion realizada correctamente"),
+        @ApiResponse(responseCode = "201", description = "Recurso creado correctamente"),
+        @ApiResponse(responseCode = "204", description = "Solicitud procesada sin contenido"),
+        @ApiResponse(responseCode = "400", description = "Solicitud invalida"),
+        @ApiResponse(responseCode = "404", description = "Recurso no encontrado")
+})
 public class AssetController {
 
     @Autowired
@@ -67,7 +76,7 @@ public class AssetController {
         }
     }
 
-    @Operation(summary = "Lista todos los archivos (imágenes, sonidos, etc.) contenidos dentro de una carpeta específica")
+    @Operation(summary = "Lista todos los archivos (imagenes, sonidos, etc.) contenidos dentro de una carpeta especifica")
     @GetMapping("/carpetas/{id}/archivos")
     public ResponseEntity<CollectionModel<ArchivoActivo>> listarArchivos(@PathVariable Integer id) {
         List<ArchivoActivo> archivos = assetService.listarArchivosDeCarpeta(id);
@@ -91,7 +100,7 @@ public class AssetController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @Operation(summary = "Sube y registra un nuevo archivo multimedia asociándolo a una carpeta existente")
+    @Operation(summary = "Sube y registra un nuevo archivo multimedia asociandolo a una carpeta existente")
     @PostMapping("/carpetas/{id}/archivos")
     public ResponseEntity<?> subirArchivo(@PathVariable Integer id, @Valid @RequestBody ArchivoActivo archivo) {
         try {

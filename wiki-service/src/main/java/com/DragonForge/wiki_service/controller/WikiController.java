@@ -4,6 +4,8 @@ import com.DragonForge.wiki_service.model.Articulo;
 import com.DragonForge.wiki_service.model.Comentario;
 import com.DragonForge.wiki_service.service.WikiService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,13 +23,20 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/api/v1/wiki")
-@Tag(name = "Enciclopedia y Lore (Wiki)", description = "Operaciones para gestionar los artículos de la historia del mundo, facciones, ciudades y los comentarios de los jugadores")
+@Tag(name = "Enciclopedia y Lore (Wiki)", description = "Operaciones para gestionar los articulos de la historia del mundo, facciones, ciudades y los comentarios de los jugadores")
+@ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Operacion realizada correctamente"),
+        @ApiResponse(responseCode = "201", description = "Recurso creado correctamente"),
+        @ApiResponse(responseCode = "204", description = "Solicitud procesada sin contenido"),
+        @ApiResponse(responseCode = "400", description = "Solicitud invalida"),
+        @ApiResponse(responseCode = "404", description = "Recurso no encontrado")
+})
 public class WikiController {
 
     @Autowired
     private WikiService wikiService;
 
-    @Operation(summary = "Obtiene el catálogo completo de todos los artículos y documentos publicados en la wiki")
+    @Operation(summary = "Obtiene el catalogo completo de todos los articulos y documentos publicados en la wiki")
     @GetMapping("/articulos")
     public ResponseEntity<CollectionModel<Articulo>> listarTodos() {
         List<Articulo> articulos = wikiService.listarArticulos();
@@ -39,7 +48,7 @@ public class WikiController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Busca y recupera el pergamino o contenido detallado de un artículo específico mediante su ID")
+    @Operation(summary = "Busca y recupera el pergamino o contenido detallado de un articulo especifico mediante su ID")
     @GetMapping("/articulos/{id}")
     public ResponseEntity<EntityModel<Articulo>> buscarPorId(@PathVariable Integer id) {
         Optional<Articulo> articulo = wikiService.buscarArticulo(id);
@@ -51,14 +60,14 @@ public class WikiController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @Operation(summary = "Escribe y publica un nuevo artículo de lore (ej: la historia del reino) asociándolo al ID del Dungeon Master o autor")
+    @Operation(summary = "Escribe y publica un nuevo articulo de lore (ej: la historia del reino) asociandolo al ID del Dungeon Master o autor")
     @PostMapping("/articulos/{autorId}")
     public ResponseEntity<Articulo> crearArticulo(@Valid @RequestBody Articulo articulo, @PathVariable Integer autorId) {
         Articulo nuevoArticulo = wikiService.crearArticulo(articulo, autorId);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoArticulo);
     }
 
-    @Operation(summary = "Lista todos los comentarios, teorías o notas dejadas por los jugadores en un artículo específico")
+    @Operation(summary = "Lista todos los comentarios, teorias o notas dejadas por los jugadores en un articulo especifico")
     @GetMapping("/articulos/{id}/comentarios")
     public ResponseEntity<CollectionModel<Comentario>> verComentarios(@PathVariable Integer id) {
         List<Comentario> comentarios = wikiService.verComentariosDeArticulo(id);
@@ -70,7 +79,7 @@ public class WikiController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Añade un nuevo comentario o nota de discusión al final de un artículo existente de la wiki")
+    @Operation(summary = "Anade un nuevo comentario o nota de discusion al final de un articulo existente de la wiki")
     @PostMapping("/articulos/{id}/comentarios")
     public ResponseEntity<?> agregarComentario(@PathVariable Integer id, @Valid @RequestBody Comentario comentario) {
         try {

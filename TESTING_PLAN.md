@@ -2,14 +2,13 @@
 
 ## Objetivo
 
-Validar el comportamiento principal de los microservicios de DragonForge mediante pruebas unitarias con JUnit 5, Mockito y datos ficticios generados con DataFaker. Las pruebas deben evitar datos reales y seguir la metodologia AAA: Arrange, Act, Assert.
+Validar el comportamiento principal de los microservicios de DragonForge mediante pruebas unitarias con JUnit 5 y datos ficticios generados con DataFaker. Las pruebas deben evitar datos reales y seguir la metodologia AAA: Arrange, Act, Assert.
 
 ## Herramientas
 
 - Java 21
 - Spring Boot
 - JUnit 5
-- Mockito
 - DataFaker 2.4.2
 - Maven
 
@@ -17,9 +16,9 @@ Validar el comportamiento principal de los microservicios de DragonForge mediant
 
 - Usar DataFaker para crear nombres, correos, textos, cantidades y valores de dominio.
 - Mantener cada prueba ordenada con comentarios `Arrange`, `Act` y `Assert`.
-- Priorizar pruebas unitarias sin levantar el contexto completo de Spring cuando solo se validen modelos o servicios aislados.
-- Usar Mockito para repositorios, clientes HTTP y dependencias externas.
-- Cubrir validaciones de entidades, reglas simples de servicios y colaboraciones entre microservicios.
+- Priorizar pruebas unitarias sin levantar el contexto completo de Spring cuando se validen modelos.
+- Usar DataFaker para construir entidades con datos dinamicos y no hardcodeados.
+- Cubrir validaciones de entidades, relaciones entre modelos y reglas simples representables sin base de datos.
 
 ## Casos de prueba
 
@@ -82,20 +81,20 @@ Validar el comportamiento principal de los microservicios de DragonForge mediant
 - El total corresponde a la suma de tiradas mas el modificador.
 - Se invoca `TiradaRepository.save(...)`.
 
-### CP-05: Consultar informacion de usuario desde otros servicios
+### CP-05 en adelante: Validaciones por microservicio
 
-**Modulos:** `wiki-service`, `notification-service`
+**Modulos:** `asset-service`, `compendium-service`, `log-service`, `map-service`, `notification-service`, `wiki-service`, `loot-service`, `rng-service`, `user-service`, `character-service`
 
-**Metodo:** clientes WebClient hacia `user-service`
+**Metodo:** creacion y validacion de entidades con DataFaker.
 
-**Objetivo:** validar la colaboracion entre microservicios que consultan datos de usuario.
+**Objetivo:** validar que cada modelo principal pueda construirse con datos ficticios y que sus restricciones rechacen valores invalidos.
 
 **Resultado esperado:**
 
-- El cliente recibe un DTO de usuario simulado.
-- La respuesta no es nula.
-- El servicio consumidor maneja correctamente el usuario retornado.
-- Los errores HTTP se prueban con respuestas controladas.
+- Las entidades validas no presentan violaciones.
+- Las relaciones entre modelos se mantienen correctamente.
+- Los campos obligatorios vacios generan violaciones.
+- Los rangos invalidos generan violaciones cuando existen restricciones como `@Min` y `@Max`.
 
 ## Resumen
 
@@ -105,7 +104,7 @@ Validar el comportamiento principal de los microservicios de DragonForge mediant
 | CP-02 | Rechazar correo invalido | `user-service` | Unitaria |
 | CP-03 | Crear personaje con equipamiento | `character-service` | Unitaria |
 | CP-04 | Tirar dados y guardar historial | `rng-service` | Unitaria |
-| CP-05 | Consultar informacion de usuario | `wiki-service`, `notification-service` | Integracion aislada |
+| CP-05+ | Validaciones y relaciones por microservicio | Todos los servicios de dominio | Unitaria |
 
 ## Comando de ejecucion
 

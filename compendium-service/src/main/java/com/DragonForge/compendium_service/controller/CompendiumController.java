@@ -4,6 +4,8 @@ import com.DragonForge.compendium_service.model.CategoriaCompendio;
 import com.DragonForge.compendium_service.model.EntradaCompendio;
 import com.DragonForge.compendium_service.service.CompendiumService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,13 +23,20 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/api/v1/compendium")
-@Tag(name = "Compendio y Bestiario", description = "Operaciones para gestionar el conocimiento del mundo: categorías, monstruos, hechizos y reglas de D&D")
+@Tag(name = "Compendio y Bestiario", description = "Operaciones para gestionar el conocimiento del mundo: categorias, monstruos, hechizos y reglas de D&D")
+@ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Operacion realizada correctamente"),
+        @ApiResponse(responseCode = "201", description = "Recurso creado correctamente"),
+        @ApiResponse(responseCode = "204", description = "Solicitud procesada sin contenido"),
+        @ApiResponse(responseCode = "400", description = "Solicitud invalida"),
+        @ApiResponse(responseCode = "404", description = "Recurso no encontrado")
+})
 public class CompendiumController {
 
     @Autowired
     private CompendiumService compendiumService;
 
-    @Operation(summary = "Obtiene el listado de todas las categorías del compendio (ej: Monstruos, Hechizos, Objetos)")
+    @Operation(summary = "Obtiene el listado de todas las categorias del compendio (ej: Monstruos, Hechizos, Objetos)")
     @GetMapping("/categorias")
     public ResponseEntity<CollectionModel<CategoriaCompendio>> listarCategorias() {
         List<CategoriaCompendio> categorias = compendiumService.listarCategorias();
@@ -39,7 +48,7 @@ public class CompendiumController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Crea una nueva categoría maestra para organizar el conocimiento")
+    @Operation(summary = "Crea una nueva categoria maestra para organizar el conocimiento")
     @PostMapping("/categorias")
     public ResponseEntity<CategoriaCompendio> crearCategoria(@Valid @RequestBody CategoriaCompendio categoria) {
         CategoriaCompendio nuevaCategoria = compendiumService.crearCategoria(categoria);
@@ -58,7 +67,7 @@ public class CompendiumController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Busca los detalles completos de una entrada específica (ej: estadísticas de un Dragón) mediante su ID")
+    @Operation(summary = "Busca los detalles completos de una entrada especifica (ej: estadisticas de un Dragon) mediante su ID")
     @GetMapping("/entradas/{id}")
     public ResponseEntity<EntityModel<EntradaCompendio>> buscarEntrada(@PathVariable Integer id) {
         Optional<EntradaCompendio> entrada = compendiumService.buscarEntradaPorId(id);
@@ -70,7 +79,7 @@ public class CompendiumController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @Operation(summary = "Filtra y lista únicamente las entradas que pertenecen a una categoría específica")
+    @Operation(summary = "Filtra y lista unicamente las entradas que pertenecen a una categoria especifica")
     @GetMapping("/categorias/{id}/entradas")
     public ResponseEntity<CollectionModel<EntradaCompendio>> buscarPorCategoria(@PathVariable Integer id) {
         List<EntradaCompendio> entradas = compendiumService.buscarEntradasPorCategoria(id);
@@ -82,7 +91,7 @@ public class CompendiumController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Registra una nueva entrada (monstruo, regla, hechizo) asociándola directamente a una categoría")
+    @Operation(summary = "Registra una nueva entrada (monstruo, regla, hechizo) asociandola directamente a una categoria")
     @PostMapping("/categorias/{id}/entradas")
     public ResponseEntity<?> agregarEntrada(@PathVariable Integer id, @Valid @RequestBody EntradaCompendio entrada) {
         try {

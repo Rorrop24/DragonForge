@@ -4,6 +4,8 @@ import com.DragonForge.notification_service.model.Buzon;
 import com.DragonForge.notification_service.model.Notificacion;
 import com.DragonForge.notification_service.service.NotificationService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,13 +23,20 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/api/v1/notifications")
-@Tag(name = "Mensajería y Notificaciones", description = "Operaciones para gestionar buzones y enviar alertas de juego, turnos o mensajes del DM a los jugadores")
+@Tag(name = "Mensajeria y Notificaciones", description = "Operaciones para gestionar buzones y enviar alertas de juego, turnos o mensajes del DM a los jugadores")
+@ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Operacion realizada correctamente"),
+        @ApiResponse(responseCode = "201", description = "Recurso creado correctamente"),
+        @ApiResponse(responseCode = "204", description = "Solicitud procesada sin contenido"),
+        @ApiResponse(responseCode = "400", description = "Solicitud invalida"),
+        @ApiResponse(responseCode = "404", description = "Recurso no encontrado")
+})
 public class NotificationController {
 
     @Autowired
     private NotificationService notificationService;
 
-    @Operation(summary = "Obtiene una lista de todos los buzones de mensajería creados en el sistema")
+    @Operation(summary = "Obtiene una lista de todos los buzones de mensajeria creados en el sistema")
     @GetMapping("/buzones")
     public ResponseEntity<CollectionModel<Buzon>> listarBuzones() {
         List<Buzon> buzones = notificationService.listarBuzones();
@@ -39,14 +48,14 @@ public class NotificationController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Crea un nuevo buzón de notificaciones (idealmente al registrar un nuevo usuario en la plataforma)")
+    @Operation(summary = "Crea un nuevo buzon de notificaciones (idealmente al registrar un nuevo usuario en la plataforma)")
     @PostMapping("/buzones")
     public ResponseEntity<Buzon> crearBuzon(@Valid @RequestBody Buzon buzon) {
         Buzon nuevoBuzon = notificationService.crearBuzon(buzon);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoBuzon);
     }
 
-    @Operation(summary = "Busca y recupera el buzón de notificaciones asociado a la ID de un usuario específico")
+    @Operation(summary = "Busca y recupera el buzon de notificaciones asociado a la ID de un usuario especifico")
     @GetMapping("/buzones/usuario/{usuarioId}")
     public ResponseEntity<EntityModel<Buzon>> buscarPorUsuarioId(@PathVariable Integer usuarioId) {
         Optional<Buzon> buzon = notificationService.buscarBuzonPorUsuarioId(usuarioId);
@@ -57,7 +66,7 @@ public class NotificationController {
         }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @Operation(summary = "Lista todos los mensajes y alertas de juego guardados en un buzón específico")
+    @Operation(summary = "Lista todos los mensajes y alertas de juego guardados en un buzon especifico")
     @GetMapping("/buzones/{buzonId}/mensajes")
     public ResponseEntity<CollectionModel<Notificacion>> listarNotificaciones(@PathVariable Integer buzonId) {
         List<Notificacion> notificaciones = notificationService.listarNotificaciones(buzonId);
@@ -69,7 +78,7 @@ public class NotificationController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Filtra y lista únicamente los mensajes que aún no han sido leídos por el jugador")
+    @Operation(summary = "Filtra y lista unicamente los mensajes que aun no han sido leidos por el jugador")
     @GetMapping("/buzones/{buzonId}/mensajes/noleidos")
     public ResponseEntity<CollectionModel<Notificacion>> listarNoLeidas(@PathVariable Integer buzonId) {
         List<Notificacion> noLeidas = notificationService.listarNotificacionesNoLeidas(buzonId);
@@ -81,7 +90,7 @@ public class NotificationController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Envía una nueva notificación a un buzón (ej: 'Es tu turno', 'Pifia crítica' o 'Recibiste 10 puntos de daño')")
+    @Operation(summary = "Envia una nueva notificacion a un buzon (ej: 'Es tu turno', 'Pifia critica' o 'Recibiste 10 puntos de dano')")
     @PostMapping("/buzones/{buzonId}/mensajes")
     public ResponseEntity<?> enviarNotificacion(@PathVariable Integer buzonId, @Valid @RequestBody Notificacion notificacion) {
         try {
@@ -92,7 +101,7 @@ public class NotificationController {
         }
     }
 
-    @Operation(summary = "Marca una notificación específica como 'leída' para que deje de aparecer como pendiente")
+    @Operation(summary = "Marca una notificacion especifica como 'leida' para que deje de aparecer como pendiente")
     @PatchMapping("/mensajes/{id}/leer")
     public ResponseEntity<?> marcarComoLeida(@PathVariable Integer id) {
         try {
