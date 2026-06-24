@@ -14,7 +14,7 @@ public class UserClient {
     public UsuarioDTO obtenerUsuarioPorId(Integer id) {
         try {
             return webClient.get()
-                    .uri("/api/v1/usuarios/{id}", id)
+                    .uri("/api/v1/users/{id}", id)
                     .retrieve()
                     .bodyToMono(UsuarioDTO.class)
                     .block();
