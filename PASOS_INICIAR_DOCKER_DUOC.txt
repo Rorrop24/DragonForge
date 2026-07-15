@@ -1,0 +1,191 @@
+PASOS PARA INICIAR DRAGONFORGE CON DOCKER EN EL DUOC
+====================================================
+
+1. Abrir Docker Desktop
+-----------------------
+Antes de ejecutar comandos, abre Docker Desktop y espera a que diga que Docker esta corriendo.
+
+
+2. Abrir PowerShell
+-------------------
+Abre PowerShell o la terminal de Windows.
+
+
+3. Entrar a la carpeta del proyecto
+-----------------------------------
+Ejecuta:
+
+cd C:\Users\rorro\Desktop\DragonForge
+
+Si el proyecto esta en otra carpeta del computador del Duoc, cambia la ruta.
+
+
+4. Construir las imagenes Docker
+--------------------------------
+Ejecuta:
+
+docker compose build
+
+Este comando crea las imagenes de todos los microservicios:
+- eureka-server
+- gateway
+- user-service
+- character-service
+- loot-service
+- wiki-service
+- log-service
+- compendium-service
+- notification-service
+- asset-service
+- rng-service
+- map-service
+
+
+5. Levantar todo el proyecto
+----------------------------
+Ejecuta:
+
+docker compose up -d
+
+El -d significa que los contenedores quedan corriendo en segundo plano.
+
+
+6. Verificar que los contenedores esten arriba
+----------------------------------------------
+Ejecuta:
+
+docker compose ps
+
+Todos deberian aparecer como Up.
+MySQL deberia aparecer como healthy.
+
+
+7. Abrir Eureka
+---------------
+En el navegador abre:
+
+http://localhost:8761
+
+Aqui deberian aparecer registrados los microservicios.
+
+
+8. Probar el Gateway
+--------------------
+En el navegador prueba estas URLs:
+
+http://localhost:9000/api/v1/users
+http://localhost:9000/api/v1/personajes
+http://localhost:9000/api/v1/loot/items
+http://localhost:9000/api/v1/wiki/articulos
+http://localhost:9000/api/v1/maps
+http://localhost:9000/api/dice/historial
+
+
+9. Si aparece Whitelabel Error Page
+-----------------------------------
+No significa necesariamente que este malo.
+Significa que entraste a una ruta que no existe.
+
+Ejemplo incorrecto:
+
+http://localhost:8083
+
+Ejemplo correcto:
+
+http://localhost:8083/api/v1/wiki/articulos
+
+Mejor usar siempre el Gateway:
+
+http://localhost:9000/api/v1/wiki/articulos
+
+
+10. Ver logs si algo falla
+--------------------------
+Para ver logs del Gateway:
+
+docker compose logs -f gateway
+
+Para ver logs de Eureka:
+
+docker compose logs -f eureka-server
+
+Para ver logs de MySQL:
+
+docker compose logs -f mysql
+
+
+11. Apagar el proyecto
+----------------------
+Ejecuta:
+
+docker compose down
+
+
+12. Reiniciar el proyecto
+-------------------------
+Ejecuta:
+
+docker compose up -d
+
+
+13. Reiniciar desde cero si Flyway o la base de datos no cargan
+---------------------------------------------------------------
+IMPORTANTE: este comando borra la base de datos local de Docker y la vuelve a crear.
+
+docker compose down -v
+docker compose build
+docker compose up -d
+
+Esto hace que Flyway vuelva a crear las tablas y cargar los datos automaticos.
+
+
+14. Verificar datos en MySQL
+----------------------------
+Ejecuta:
+
+docker exec dragonforge-mysql mysql -uroot -e "SHOW DATABASES;"
+
+Para ver datos de loot:
+
+docker exec dragonforge-mysql mysql -uroot -e "SELECT * FROM dnd_loot_db.items;"
+
+Para ver datos de wiki:
+
+docker exec dragonforge-mysql mysql -uroot -e "SELECT * FROM dnd_wiki_db.articulos;"
+
+
+15. Comandos importantes para la presentacion
+---------------------------------------------
+cd C:\Users\rorro\Desktop\DragonForge
+docker compose build
+docker compose up -d
+docker compose ps
+
+Abrir en navegador:
+
+http://localhost:8761
+http://localhost:9000/api/v1/users
+http://localhost:9000/api/v1/loot/items
+http://localhost:9000/api/v1/wiki/articulos
+
+
+RESUMEN PARA EXPLICAR
+=====================
+
+Dockerfile:
+Compila cada microservicio Java con Maven y luego ejecuta el .jar con Java 21.
+
+docker-compose.yml:
+Levanta todos los contenedores juntos: MySQL, Eureka, Gateway y microservicios.
+
+Eureka:
+Registra y muestra los servicios disponibles.
+
+Gateway:
+Es la entrada principal del sistema. Todas las APIs se pueden consumir desde localhost:9000.
+
+Flyway:
+Crea automaticamente las tablas y carga datos iniciales en MySQL cuando arrancan los servicios.
+
+MySQL:
+Guarda una base de datos separada para cada microservicio.

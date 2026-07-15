@@ -4,6 +4,10 @@ import com.DragonForge.loot_service.model.Categoria;
 import com.DragonForge.loot_service.model.Item;
 import com.DragonForge.loot_service.service.LootService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -36,7 +40,12 @@ public class LootController {
     @Autowired
     private LootService lootService;
 
-    @Operation(summary = "Obtiene el catalogo completo de todos los objetos y botin disponibles en el juego")
+    @Operation(summary = "Listar items de botin", description = "Retorna el catalogo completo de armas, armaduras, pociones y otros objetos disponibles.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Items obtenidos correctamente", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Item.class)))),
+            @ApiResponse(responseCode = "204", description = "No existen items registrados", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/items")
     public ResponseEntity<CollectionModel<Item>> listarItems() {
         List<Item> items = lootService.listarTodosLosItems();
@@ -48,9 +57,14 @@ public class LootController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Busca los detalles, rareza y estadisticas de un objeto especifico mediante su ID")
+    @Operation(summary = "Buscar item por ID", description = "Obtiene el detalle, rareza y estadisticas de un objeto especifico.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Item encontrado", content = @Content(schema = @Schema(implementation = Item.class))),
+            @ApiResponse(responseCode = "404", description = "Item no encontrado", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/items/{id}")
-    public ResponseEntity<EntityModel<Item>> buscarItemPorId(@PathVariable Integer id) {
+    public ResponseEntity<EntityModel<Item>> buscarItemPorId(@Parameter(description = "ID del item", example = "1", required = true) @PathVariable Integer id) {
         Optional<Item> item = lootService.buscarItemPorId(id);
         return item.map(value -> {
                     EntityModel<Item> model = EntityModel.of(value);
@@ -60,9 +74,14 @@ public class LootController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @Operation(summary = "Filtra y lista todos los objetos que pertenecen a una categoria especifica (ej: solo espadas o solo pociones)")
+    @Operation(summary = "Listar items por categoria", description = "Retorna los objetos asociados a una categoria de botin especifica.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Items de la categoria obtenidos correctamente", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Item.class)))),
+            @ApiResponse(responseCode = "204", description = "La categoria no tiene items registrados", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/items/categoria/{categoriaId}")
-    public ResponseEntity<CollectionModel<Item>> listarPorCategoria(@PathVariable Integer categoriaId) {
+    public ResponseEntity<CollectionModel<Item>> listarPorCategoria(@Parameter(description = "ID de la categoria de botin", example = "1", required = true) @PathVariable Integer categoriaId) {
         List<Item> items = lootService.buscarItemsPorCategoria(categoriaId);
         if (items.isEmpty()) {
             return ResponseEntity.noContent().build();
@@ -83,7 +102,12 @@ public class LootController {
         }
     }
 
-    @Operation(summary = "Obtiene el listado de todas las categorias en las que se clasifica el botin")
+    @Operation(summary = "Listar categorias de botin", description = "Retorna todas las categorias usadas para clasificar items y recompensas.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Categorias obtenidas correctamente", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Categoria.class)))),
+            @ApiResponse(responseCode = "204", description = "No existen categorias registradas", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/categorias")
     public ResponseEntity<CollectionModel<Categoria>> listarCategorias() {
         List<Categoria> categorias = lootService.listarCategorias();
@@ -116,9 +140,14 @@ public class LootController {
         }
     }
 
-    @Operation(summary = "Busca una categoria de botin mediante su ID")
+    @Operation(summary = "Buscar categoria por ID", description = "Obtiene el detalle de una categoria de botin especifica.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Categoria encontrada", content = @Content(schema = @Schema(implementation = Categoria.class))),
+            @ApiResponse(responseCode = "404", description = "Categoria no encontrada", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/categorias/{id}")
-    public ResponseEntity<EntityModel<Categoria>> buscarCategoria(@PathVariable Integer id) {
+    public ResponseEntity<EntityModel<Categoria>> buscarCategoria(@Parameter(description = "ID de la categoria de botin", example = "1", required = true) @PathVariable Integer id) {
         Optional<Categoria> categoria = lootService.buscarCategoriaPorId(id);
         return categoria.map(value -> {
                     EntityModel<Categoria> model = EntityModel.of(value);

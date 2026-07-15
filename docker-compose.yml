@@ -1,0 +1,297 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: dragonforge-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  eureka-server:
+    build:
+      context: .
+      args:
+        MODULE: eureka-server
+    image: dragonforge/eureka-server:local
+    container_name: dragonforge-eureka-server
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8761
+      EUREKA_INSTANCE_HOSTNAME: eureka-server
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"
+      EUREKA_CLIENT_FETCH_REGISTRY: "false"
+    ports:
+      - "8761:8761"
+
+  gateway:
+    build:
+      context: .
+      args:
+        MODULE: gateway
+    image: dragonforge/gateway:local
+    container_name: dragonforge-gateway
+    restart: unless-stopped
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_CLOUD_GATEWAY_ROUTES_0_URI: http://user-service:8084
+      SPRING_CLOUD_GATEWAY_ROUTES_0_PREDICATES_0: Path=/api/v1/users/**
+      SPRING_CLOUD_GATEWAY_ROUTES_1_URI: http://asset-service:8089
+      SPRING_CLOUD_GATEWAY_ROUTES_1_PREDICATES_0: Path=/api/v1/assets/**
+      SPRING_CLOUD_GATEWAY_ROUTES_2_URI: http://loot-service:8082
+      SPRING_CLOUD_GATEWAY_ROUTES_2_PREDICATES_0: Path=/api/v1/loot/**
+      SPRING_CLOUD_GATEWAY_ROUTES_3_URI: http://rng-service:8096
+      SPRING_CLOUD_GATEWAY_ROUTES_3_PREDICATES_0: Path=/api/dice/**
+      SPRING_CLOUD_GATEWAY_ROUTES_4_URI: http://wiki-service:8083
+      SPRING_CLOUD_GATEWAY_ROUTES_4_PREDICATES_0: Path=/api/v1/wiki/**
+      SPRING_CLOUD_GATEWAY_ROUTES_5_URI: http://character-service:8081
+      SPRING_CLOUD_GATEWAY_ROUTES_5_PREDICATES_0: Path=/api/v1/personajes/**
+      SPRING_CLOUD_GATEWAY_ROUTES_6_URI: http://compendium-service:8087
+      SPRING_CLOUD_GATEWAY_ROUTES_6_PREDICATES_0: Path=/api/v1/compendium/**
+      SPRING_CLOUD_GATEWAY_ROUTES_7_URI: http://log-service:8086
+      SPRING_CLOUD_GATEWAY_ROUTES_7_PREDICATES_0: Path=/api/v1/logs/**
+      SPRING_CLOUD_GATEWAY_ROUTES_8_URI: http://notification-service:8088
+      SPRING_CLOUD_GATEWAY_ROUTES_8_PREDICATES_0: Path=/api/v1/notifications/**
+      SPRING_CLOUD_GATEWAY_ROUTES_9_URI: http://map-service:8097
+      SPRING_CLOUD_GATEWAY_ROUTES_9_PREDICATES_0: Path=/api/v1/maps/**
+    ports:
+      - "9000:9000"
+    depends_on:
+      - eureka-server
+      - user-service
+      - asset-service
+      - loot-service
+      - rng-service
+      - wiki-service
+      - character-service
+      - compendium-service
+      - log-service
+      - notification-service
+      - map-service
+
+  user-service:
+    build:
+      context: .
+      args:
+        MODULE: user-service
+    image: dragonforge/user-service:local
+    container_name: dragonforge-user-service
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/dnd_user_db?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ""
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+    ports:
+      - "8084:8084"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+
+  asset-service:
+    build:
+      context: .
+      args:
+        MODULE: asset-service
+    image: dragonforge/asset-service:local
+    container_name: dragonforge-asset-service
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/dnd_asset_db?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ""
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+    ports:
+      - "8089:8089"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+
+  loot-service:
+    build:
+      context: .
+      args:
+        MODULE: loot-service
+    image: dragonforge/loot-service:local
+    container_name: dragonforge-loot-service
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/dnd_loot_db?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ""
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+    ports:
+      - "8082:8082"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+
+  rng-service:
+    build:
+      context: .
+      args:
+        MODULE: rng-service
+    image: dragonforge/rng-service:local
+    container_name: dragonforge-rng-service
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/dnd_rng_db?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ""
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+    ports:
+      - "8096:8096"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+
+  wiki-service:
+    build:
+      context: .
+      args:
+        MODULE: wiki-service
+    image: dragonforge/wiki-service:local
+    container_name: dragonforge-wiki-service
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/dnd_wiki_db?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ""
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SERVICES_USER_URL: http://user-service:8084
+    ports:
+      - "8083:8083"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+
+  character-service:
+    build:
+      context: .
+      args:
+        MODULE: character-service
+    image: dragonforge/character-service:local
+    container_name: dragonforge-character-service
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/dnd_character_db?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ""
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SERVICES_RNG_URL: http://rng-service:8096
+    ports:
+      - "8081:8081"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+      rng-service:
+        condition: service_started
+
+  compendium-service:
+    build:
+      context: .
+      args:
+        MODULE: compendium-service
+    image: dragonforge/compendium-service:local
+    container_name: dragonforge-compendium-service
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/dnd_compendium_db?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ""
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+    ports:
+      - "8087:8087"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+
+  log-service:
+    build:
+      context: .
+      args:
+        MODULE: log-service
+    image: dragonforge/log-service:local
+    container_name: dragonforge-log-service
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/dnd_log_db?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ""
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+    ports:
+      - "8086:8086"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+
+  notification-service:
+    build:
+      context: .
+      args:
+        MODULE: notification-service
+    image: dragonforge/notification-service:local
+    container_name: dragonforge-notification-service
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/dnd_notification_db?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ""
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SERVICES_USER_URL: http://user-service:8084
+    ports:
+      - "8088:8088"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+      user-service:
+        condition: service_started
+
+  map-service:
+    build:
+      context: .
+      args:
+        MODULE: map-service
+    image: dragonforge/map-service:local
+    container_name: dragonforge-map-service
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/dnd_map_db?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ""
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+    ports:
+      - "8097:8097"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+
+volumes:
+  mysql-data:

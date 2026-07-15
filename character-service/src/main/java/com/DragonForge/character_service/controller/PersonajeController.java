@@ -4,6 +4,10 @@ import com.DragonForge.character_service.dto.PersonajeDTO;
 import com.DragonForge.character_service.model.Personaje;
 import com.DragonForge.character_service.service.PersonajeService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,7 +39,15 @@ public class PersonajeController {
     @Autowired
     private PersonajeService service;
 
-    @Operation(summary = "Obtiene el listado completo de todos los personajes creados en la plataforma")
+    @Operation(
+            summary = "Listar personajes",
+            description = "Retorna todas las hojas de personaje registradas en la plataforma."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Personajes obtenidos correctamente", content = @Content(array = @ArraySchema(schema = @Schema(implementation = PersonajeDTO.class)))),
+            @ApiResponse(responseCode = "204", description = "No existen personajes registrados", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping
     public ResponseEntity<CollectionModel<PersonajeDTO>> listar() {
         List<PersonajeDTO> list = service.listarTodos();
@@ -47,9 +59,17 @@ public class PersonajeController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Busca y recupera la hoja de personaje detallada mediante su ID unico")
+    @Operation(
+            summary = "Buscar personaje por ID",
+            description = "Obtiene la hoja de personaje detallada segun su identificador unico."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Personaje encontrado", content = @Content(schema = @Schema(implementation = PersonajeDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Personaje no encontrado", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/{id}")
-    public ResponseEntity<EntityModel<PersonajeDTO>> buscar(@PathVariable Integer id) {
+    public ResponseEntity<EntityModel<PersonajeDTO>> buscar(@Parameter(description = "ID del personaje", example = "1", required = true) @PathVariable Integer id) {
         try {
             PersonajeDTO dto = service.buscarPorId(id);
             EntityModel<PersonajeDTO> model = EntityModel.of(dto);

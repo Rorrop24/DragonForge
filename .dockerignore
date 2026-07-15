@@ -1,0 +1,7 @@
+.git
+.idea
+**/target
+**/.mvn/wrapper/maven-wrapper.jar
+*.iml
+.DS_Store
+docker-compose.override.yml

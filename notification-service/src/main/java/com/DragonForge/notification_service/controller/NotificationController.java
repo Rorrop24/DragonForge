@@ -4,6 +4,10 @@ import com.DragonForge.notification_service.model.Buzon;
 import com.DragonForge.notification_service.model.Notificacion;
 import com.DragonForge.notification_service.service.NotificationService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -36,7 +40,12 @@ public class NotificationController {
     @Autowired
     private NotificationService notificationService;
 
-    @Operation(summary = "Obtiene una lista de todos los buzones de mensajeria creados en el sistema")
+    @Operation(summary = "Listar buzones", description = "Retorna todos los buzones de mensajeria y notificaciones creados en el sistema.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Buzones obtenidos correctamente", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Buzon.class)))),
+            @ApiResponse(responseCode = "204", description = "No existen buzones registrados", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/buzones")
     public ResponseEntity<CollectionModel<Buzon>> listarBuzones() {
         List<Buzon> buzones = notificationService.listarBuzones();
@@ -55,9 +64,14 @@ public class NotificationController {
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoBuzon);
     }
 
-    @Operation(summary = "Busca y recupera el buzon de notificaciones asociado a la ID de un usuario especifico")
+    @Operation(summary = "Buscar buzon por usuario", description = "Obtiene el buzon de notificaciones asociado a un usuario especifico.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Buzon encontrado", content = @Content(schema = @Schema(implementation = Buzon.class))),
+            @ApiResponse(responseCode = "404", description = "Buzon no encontrado", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/buzones/usuario/{usuarioId}")
-    public ResponseEntity<EntityModel<Buzon>> buscarPorUsuarioId(@PathVariable Integer usuarioId) {
+    public ResponseEntity<EntityModel<Buzon>> buscarPorUsuarioId(@Parameter(description = "ID del usuario propietario del buzon", example = "1", required = true) @PathVariable Integer usuarioId) {
         Optional<Buzon> buzon = notificationService.buscarBuzonPorUsuarioId(usuarioId);
         return buzon.map(value -> {
             EntityModel<Buzon> model = EntityModel.of(value);
@@ -66,9 +80,14 @@ public class NotificationController {
         }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @Operation(summary = "Lista todos los mensajes y alertas de juego guardados en un buzon especifico")
+    @Operation(summary = "Listar mensajes de un buzon", description = "Retorna las notificaciones y alertas registradas en un buzon especifico.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Mensajes obtenidos correctamente", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Notificacion.class)))),
+            @ApiResponse(responseCode = "204", description = "El buzon no tiene mensajes registrados", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/buzones/{buzonId}/mensajes")
-    public ResponseEntity<CollectionModel<Notificacion>> listarNotificaciones(@PathVariable Integer buzonId) {
+    public ResponseEntity<CollectionModel<Notificacion>> listarNotificaciones(@Parameter(description = "ID del buzon", example = "1", required = true) @PathVariable Integer buzonId) {
         List<Notificacion> notificaciones = notificationService.listarNotificaciones(buzonId);
         if (notificaciones.isEmpty()) {
             return ResponseEntity.noContent().build();
@@ -78,9 +97,14 @@ public class NotificationController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Filtra y lista unicamente los mensajes que aun no han sido leidos por el jugador")
+    @Operation(summary = "Listar mensajes no leidos", description = "Retorna solo las notificaciones pendientes de lectura de un buzon.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Mensajes no leidos obtenidos correctamente", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Notificacion.class)))),
+            @ApiResponse(responseCode = "204", description = "El buzon no tiene mensajes no leidos", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/buzones/{buzonId}/mensajes/noleidos")
-    public ResponseEntity<CollectionModel<Notificacion>> listarNoLeidas(@PathVariable Integer buzonId) {
+    public ResponseEntity<CollectionModel<Notificacion>> listarNoLeidas(@Parameter(description = "ID del buzon", example = "1", required = true) @PathVariable Integer buzonId) {
         List<Notificacion> noLeidas = notificationService.listarNotificacionesNoLeidas(buzonId);
         if (noLeidas.isEmpty()) {
             return ResponseEntity.noContent().build();
@@ -112,9 +136,14 @@ public class NotificationController {
         }
     }
 
-    @Operation(summary = "Busca un buzon mediante su ID")
+    @Operation(summary = "Buscar buzon por ID", description = "Obtiene el detalle de un buzon de notificaciones especifico.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Buzon encontrado", content = @Content(schema = @Schema(implementation = Buzon.class))),
+            @ApiResponse(responseCode = "404", description = "Buzon no encontrado", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/buzones/{id}")
-    public ResponseEntity<EntityModel<Buzon>> buscarBuzon(@PathVariable Integer id) {
+    public ResponseEntity<EntityModel<Buzon>> buscarBuzon(@Parameter(description = "ID del buzon", example = "1", required = true) @PathVariable Integer id) {
         Optional<Buzon> buzon = notificationService.buscarBuzon(id);
         return buzon.map(value -> {
             EntityModel<Buzon> model = EntityModel.of(value);
@@ -144,9 +173,14 @@ public class NotificationController {
         }
     }
 
-    @Operation(summary = "Busca una notificacion mediante su ID")
+    @Operation(summary = "Buscar notificacion por ID", description = "Obtiene el detalle de una notificacion o mensaje especifico.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Notificacion encontrada", content = @Content(schema = @Schema(implementation = Notificacion.class))),
+            @ApiResponse(responseCode = "404", description = "Notificacion no encontrada", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/mensajes/{id}")
-    public ResponseEntity<EntityModel<Notificacion>> buscarNotificacion(@PathVariable Integer id) {
+    public ResponseEntity<EntityModel<Notificacion>> buscarNotificacion(@Parameter(description = "ID de la notificacion", example = "1", required = true) @PathVariable Integer id) {
         Optional<Notificacion> notificacion = notificationService.buscarNotificacion(id);
         return notificacion.map(value -> {
             EntityModel<Notificacion> model = EntityModel.of(value);

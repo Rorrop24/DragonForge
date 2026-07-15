@@ -4,6 +4,10 @@ import com.DragonForge.compendium_service.model.CategoriaCompendio;
 import com.DragonForge.compendium_service.model.EntradaCompendio;
 import com.DragonForge.compendium_service.service.CompendiumService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -36,7 +40,15 @@ public class CompendiumController {
     @Autowired
     private CompendiumService compendiumService;
 
-    @Operation(summary = "Obtiene el listado de todas las categorias del compendio (ej: Monstruos, Hechizos, Objetos)")
+    @Operation(
+            summary = "Listar categorias del compendio",
+            description = "Retorna las categorias maestras usadas para organizar monstruos, hechizos, reglas y objetos."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Categorias obtenidas correctamente", content = @Content(array = @ArraySchema(schema = @Schema(implementation = CategoriaCompendio.class)))),
+            @ApiResponse(responseCode = "204", description = "No existen categorias registradas", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/categorias")
     public ResponseEntity<CollectionModel<CategoriaCompendio>> listarCategorias() {
         List<CategoriaCompendio> categorias = compendiumService.listarCategorias();
@@ -55,7 +67,15 @@ public class CompendiumController {
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevaCategoria);
     }
 
-    @Operation(summary = "Obtiene el listado completo de todas las entradas (todo el lore y bestiario mezclado)")
+    @Operation(
+            summary = "Listar entradas del compendio",
+            description = "Retorna todas las entradas del compendio, incluyendo lore, bestiario, hechizos y reglas."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Entradas obtenidas correctamente", content = @Content(array = @ArraySchema(schema = @Schema(implementation = EntradaCompendio.class)))),
+            @ApiResponse(responseCode = "204", description = "No existen entradas registradas", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/entradas")
     public ResponseEntity<CollectionModel<EntradaCompendio>> listarTodasLasEntradas() {
         List<EntradaCompendio> entradas = compendiumService.listarTodasLasEntradas();
@@ -67,9 +87,17 @@ public class CompendiumController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Busca los detalles completos de una entrada especifica (ej: estadisticas de un Dragon) mediante su ID")
+    @Operation(
+            summary = "Buscar entrada por ID",
+            description = "Obtiene el detalle completo de una entrada del compendio segun su identificador."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Entrada encontrada", content = @Content(schema = @Schema(implementation = EntradaCompendio.class))),
+            @ApiResponse(responseCode = "404", description = "Entrada no encontrada", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/entradas/{id}")
-    public ResponseEntity<EntityModel<EntradaCompendio>> buscarEntrada(@PathVariable Integer id) {
+    public ResponseEntity<EntityModel<EntradaCompendio>> buscarEntrada(@Parameter(description = "ID de la entrada del compendio", example = "1", required = true) @PathVariable Integer id) {
         Optional<EntradaCompendio> entrada = compendiumService.buscarEntradaPorId(id);
         return entrada.map(value -> {
                     EntityModel<EntradaCompendio> model = EntityModel.of(value);
@@ -79,9 +107,17 @@ public class CompendiumController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @Operation(summary = "Filtra y lista unicamente las entradas que pertenecen a una categoria especifica")
+    @Operation(
+            summary = "Listar entradas por categoria",
+            description = "Retorna las entradas asociadas a una categoria concreta del compendio."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Entradas de la categoria obtenidas correctamente", content = @Content(array = @ArraySchema(schema = @Schema(implementation = EntradaCompendio.class)))),
+            @ApiResponse(responseCode = "204", description = "La categoria no tiene entradas registradas", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/categorias/{id}/entradas")
-    public ResponseEntity<CollectionModel<EntradaCompendio>> buscarPorCategoria(@PathVariable Integer id) {
+    public ResponseEntity<CollectionModel<EntradaCompendio>> buscarPorCategoria(@Parameter(description = "ID de la categoria del compendio", example = "1", required = true) @PathVariable Integer id) {
         List<EntradaCompendio> entradas = compendiumService.buscarEntradasPorCategoria(id);
         if (entradas.isEmpty()) {
             return ResponseEntity.noContent().build();

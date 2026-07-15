@@ -4,6 +4,10 @@ import com.DragonForge.log_service.model.Diario;
 import com.DragonForge.log_service.model.Entrada;
 import com.DragonForge.log_service.service.LogService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -36,7 +40,12 @@ public class LogController {
     @Autowired
     private LogService logService;
 
-    @Operation(summary = "Obtiene el listado completo de todos los diarios de campana activos")
+    @Operation(summary = "Listar diarios de campana", description = "Retorna todos los diarios de aventura activos.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Diarios obtenidos correctamente", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Diario.class)))),
+            @ApiResponse(responseCode = "204", description = "No existen diarios registrados", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/diarios")
     public ResponseEntity<CollectionModel<Diario>> listarDiarios() {
         List<Diario> diarios = logService.listarDiarios();
@@ -48,9 +57,14 @@ public class LogController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Busca los detalles de un diario de aventuras especifico mediante su ID")
+    @Operation(summary = "Buscar diario por ID", description = "Obtiene el detalle de un diario de aventuras especifico.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Diario encontrado", content = @Content(schema = @Schema(implementation = Diario.class))),
+            @ApiResponse(responseCode = "404", description = "Diario no encontrado", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/diarios/{id}")
-    public ResponseEntity<EntityModel<Diario>> buscarDiario(@PathVariable Integer id) {
+    public ResponseEntity<EntityModel<Diario>> buscarDiario(@Parameter(description = "ID del diario", example = "1", required = true) @PathVariable Integer id) {
         Optional<Diario> diario = logService.buscarDiario(id);
         return diario.map(value -> {
                     EntityModel<Diario> model = EntityModel.of(value);
@@ -67,9 +81,14 @@ public class LogController {
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoDiario);
     }
 
-    @Operation(summary = "Lista cronologicamente todas las entradas (eventos, notas, historia) escritas en un diario")
+    @Operation(summary = "Listar entradas de un diario", description = "Retorna las entradas registradas en un diario de aventuras.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Entradas obtenidas correctamente", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Entrada.class)))),
+            @ApiResponse(responseCode = "204", description = "El diario no tiene entradas registradas", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/diarios/{id}/entradas")
-    public ResponseEntity<CollectionModel<Entrada>> verEntradas(@PathVariable Integer id) {
+    public ResponseEntity<CollectionModel<Entrada>> verEntradas(@Parameter(description = "ID del diario", example = "1", required = true) @PathVariable Integer id) {
         List<Entrada> entradas = logService.verEntradasDeDiario(id);
         if (entradas.isEmpty()) {
             return ResponseEntity.noContent().build();
@@ -111,9 +130,14 @@ public class LogController {
         }
     }
 
-    @Operation(summary = "Busca una entrada de diario mediante su ID")
+    @Operation(summary = "Buscar entrada por ID", description = "Obtiene una entrada especifica del diario de aventuras.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Entrada encontrada", content = @Content(schema = @Schema(implementation = Entrada.class))),
+            @ApiResponse(responseCode = "404", description = "Entrada no encontrada", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/entradas/{id}")
-    public ResponseEntity<EntityModel<Entrada>> buscarEntrada(@PathVariable Integer id) {
+    public ResponseEntity<EntityModel<Entrada>> buscarEntrada(@Parameter(description = "ID de la entrada", example = "1", required = true) @PathVariable Integer id) {
         Optional<Entrada> entrada = logService.buscarEntrada(id);
         return entrada.map(value -> {
                     EntityModel<Entrada> model = EntityModel.of(value);

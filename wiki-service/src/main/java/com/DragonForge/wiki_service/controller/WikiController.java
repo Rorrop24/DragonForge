@@ -4,6 +4,10 @@ import com.DragonForge.wiki_service.model.Articulo;
 import com.DragonForge.wiki_service.model.Comentario;
 import com.DragonForge.wiki_service.service.WikiService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -36,7 +40,12 @@ public class WikiController {
     @Autowired
     private WikiService wikiService;
 
-    @Operation(summary = "Obtiene el catalogo completo de todos los articulos y documentos publicados en la wiki")
+    @Operation(summary = "Listar articulos de wiki", description = "Retorna todos los articulos y documentos publicados en la wiki del mundo.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Articulos obtenidos correctamente", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Articulo.class)))),
+            @ApiResponse(responseCode = "204", description = "No existen articulos registrados", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/articulos")
     public ResponseEntity<CollectionModel<Articulo>> listarTodos() {
         List<Articulo> articulos = wikiService.listarArticulos();
@@ -48,9 +57,14 @@ public class WikiController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Busca y recupera el pergamino o contenido detallado de un articulo especifico mediante su ID")
+    @Operation(summary = "Buscar articulo por ID", description = "Obtiene el contenido detallado de un articulo especifico de la wiki.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Articulo encontrado", content = @Content(schema = @Schema(implementation = Articulo.class))),
+            @ApiResponse(responseCode = "404", description = "Articulo no encontrado", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/articulos/{id}")
-    public ResponseEntity<EntityModel<Articulo>> buscarPorId(@PathVariable Integer id) {
+    public ResponseEntity<EntityModel<Articulo>> buscarPorId(@Parameter(description = "ID del articulo", example = "1", required = true) @PathVariable Integer id) {
         Optional<Articulo> articulo = wikiService.buscarArticulo(id);
         return articulo.map(value -> {
                     EntityModel<Articulo> model = EntityModel.of(value);
@@ -67,9 +81,14 @@ public class WikiController {
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoArticulo);
     }
 
-    @Operation(summary = "Lista todos los comentarios, teorias o notas dejadas por los jugadores en un articulo especifico")
+    @Operation(summary = "Listar comentarios de un articulo", description = "Retorna los comentarios y notas de discusion asociados a un articulo de wiki.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Comentarios obtenidos correctamente", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Comentario.class)))),
+            @ApiResponse(responseCode = "204", description = "El articulo no tiene comentarios registrados", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/articulos/{id}/comentarios")
-    public ResponseEntity<CollectionModel<Comentario>> verComentarios(@PathVariable Integer id) {
+    public ResponseEntity<CollectionModel<Comentario>> verComentarios(@Parameter(description = "ID del articulo", example = "1", required = true) @PathVariable Integer id) {
         List<Comentario> comentarios = wikiService.verComentariosDeArticulo(id);
         if (comentarios.isEmpty()) {
             return ResponseEntity.noContent().build();

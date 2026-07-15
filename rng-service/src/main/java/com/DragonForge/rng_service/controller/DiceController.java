@@ -4,6 +4,10 @@ import com.DragonForge.rng_service.dto.RollResultDTO;
 import com.DragonForge.rng_service.model.Tirada;
 import com.DragonForge.rng_service.service.DiceService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,12 +37,17 @@ public class DiceController {
     @Autowired
     private DiceService diceService;
 
-    @Operation(summary = "Lanza uno o multiples dados virtuales especificando la cantidad de caras (ej: 20), el numero de dados y el modificador (+2, -1, etc.)")
+    @Operation(summary = "Lanzar dados virtuales", description = "Simula una tirada indicando cantidad de caras, numero de dados y modificador final.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Tirada ejecutada correctamente", content = @Content(schema = @Schema(implementation = RollResultDTO.class))),
+            @ApiResponse(responseCode = "400", description = "Parametros de tirada invalidos", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/roll")
     public ResponseEntity<EntityModel<RollResultDTO>> rollDice(
-            @RequestParam(defaultValue = "20") int sides,
-            @RequestParam(defaultValue = "1") int count,
-            @RequestParam(defaultValue = "0") int modifier) {
+            @Parameter(description = "Cantidad de caras del dado", example = "20") @RequestParam(defaultValue = "20") int sides,
+            @Parameter(description = "Cantidad de dados a lanzar", example = "1") @RequestParam(defaultValue = "1") int count,
+            @Parameter(description = "Modificador que se suma al total", example = "2") @RequestParam(defaultValue = "0") int modifier) {
 
         RollResultDTO result = diceService.roll(sides, count, modifier);
         EntityModel<RollResultDTO> model = EntityModel.of(result);
@@ -46,7 +55,12 @@ public class DiceController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Consulta el historial de las ultimas tiradas realizadas, ideal para revisar pifias criticas o exitos epicos")
+    @Operation(summary = "Consultar historial de tiradas", description = "Retorna las tiradas registradas recientemente por el servicio RNG.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Historial obtenido correctamente", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Tirada.class)))),
+            @ApiResponse(responseCode = "204", description = "No existen tiradas registradas", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/historial")
     public ResponseEntity<CollectionModel<Tirada>> verHistorial() {
         List<Tirada> historial = diceService.obtenerHistorial();

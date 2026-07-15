@@ -4,6 +4,10 @@ import com.DragonForge.user_service.model.Campana;
 import com.DragonForge.user_service.model.Usuario;
 import com.DragonForge.user_service.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -36,7 +40,12 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @Operation(summary = "Obtiene el listado completo de todos los usuarios (Jugadores y DMs) registrados en la plataforma")
+    @Operation(summary = "Listar usuarios", description = "Retorna todos los usuarios registrados, incluyendo jugadores y Dungeon Masters.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Usuarios obtenidos correctamente", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Usuario.class)))),
+            @ApiResponse(responseCode = "204", description = "No existen usuarios registrados", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping
     public ResponseEntity<CollectionModel<Usuario>> listarUsuarios() {
         List<Usuario> usuarios = userService.listarUsuarios();
@@ -48,9 +57,14 @@ public class UserController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Busca los datos de perfil de un usuario especifico mediante su ID")
+    @Operation(summary = "Buscar usuario por ID", description = "Obtiene los datos de perfil de un usuario especifico.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Usuario encontrado", content = @Content(schema = @Schema(implementation = Usuario.class))),
+            @ApiResponse(responseCode = "404", description = "Usuario no encontrado", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/{id}")
-    public ResponseEntity<EntityModel<Usuario>> buscarUsuario(@PathVariable Integer id) {
+    public ResponseEntity<EntityModel<Usuario>> buscarUsuario(@Parameter(description = "ID del usuario", example = "1", required = true) @PathVariable Integer id) {
         Optional<Usuario> usuario = userService.buscarUsuario(id);
         return usuario.map(value -> {
                     EntityModel<Usuario> model = EntityModel.of(value);
@@ -67,9 +81,14 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoUsuario);
     }
 
-    @Operation(summary = "Lista todas las campanas de Dungeons & Dragons en las que participa o que dirige un usuario especifico")
+    @Operation(summary = "Listar campanas de usuario", description = "Retorna las campanas en las que participa o que dirige un usuario especifico.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Campanas obtenidas correctamente", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Campana.class)))),
+            @ApiResponse(responseCode = "204", description = "El usuario no tiene campanas registradas", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/{id}/campanas")
-    public ResponseEntity<CollectionModel<Campana>> listarCampanas(@PathVariable Integer id) {
+    public ResponseEntity<CollectionModel<Campana>> listarCampanas(@Parameter(description = "ID del usuario", example = "1", required = true) @PathVariable Integer id) {
         List<Campana> campanas = userService.verCampanasDeUsuario(id);
         if (campanas.isEmpty()) {
             return ResponseEntity.noContent().build();
@@ -111,9 +130,14 @@ public class UserController {
         }
     }
 
-    @Operation(summary = "Busca una campana mediante su ID")
+    @Operation(summary = "Buscar campana por ID", description = "Obtiene el detalle de una campana especifica.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Campana encontrada", content = @Content(schema = @Schema(implementation = Campana.class))),
+            @ApiResponse(responseCode = "404", description = "Campana no encontrada", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/campanas/{id}")
-    public ResponseEntity<EntityModel<Campana>> buscarCampana(@PathVariable Integer id) {
+    public ResponseEntity<EntityModel<Campana>> buscarCampana(@Parameter(description = "ID de la campana", example = "1", required = true) @PathVariable Integer id) {
         Optional<Campana> campana = userService.buscarCampana(id);
         return campana.map(value -> {
                     EntityModel<Campana> model = EntityModel.of(value);

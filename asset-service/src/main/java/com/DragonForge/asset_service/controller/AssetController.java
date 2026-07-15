@@ -4,6 +4,10 @@ import com.DragonForge.asset_service.model.ArchivoActivo;
 import com.DragonForge.asset_service.model.CarpetaActivo;
 import com.DragonForge.asset_service.service.AssetService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -36,7 +40,15 @@ public class AssetController {
     @Autowired
     private AssetService assetService;
 
-    @Operation(summary = "Obtiene el listado completo de todas las carpetas (ej: Mapas de Mazmorras, Tokens de Enemigos)")
+    @Operation(
+            summary = "Listar carpetas de recursos multimedia",
+            description = "Retorna todas las carpetas usadas para organizar imagenes, tokens, mapas y otros archivos multimedia."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Carpetas obtenidas correctamente", content = @Content(array = @ArraySchema(schema = @Schema(implementation = CarpetaActivo.class)))),
+            @ApiResponse(responseCode = "204", description = "No existen carpetas registradas", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/carpetas")
     public ResponseEntity<CollectionModel<CarpetaActivo>> listarCarpetas() {
         List<CarpetaActivo> carpetas = assetService.listarCarpetas();
@@ -76,9 +88,17 @@ public class AssetController {
         }
     }
 
-    @Operation(summary = "Lista todos los archivos (imagenes, sonidos, etc.) contenidos dentro de una carpeta especifica")
+    @Operation(
+            summary = "Listar archivos de una carpeta",
+            description = "Retorna los archivos multimedia asociados a una carpeta especifica."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Archivos obtenidos correctamente", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ArchivoActivo.class)))),
+            @ApiResponse(responseCode = "204", description = "La carpeta no tiene archivos registrados", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/carpetas/{id}/archivos")
-    public ResponseEntity<CollectionModel<ArchivoActivo>> listarArchivos(@PathVariable Integer id) {
+    public ResponseEntity<CollectionModel<ArchivoActivo>> listarArchivos(@Parameter(description = "ID de la carpeta multimedia", example = "1", required = true) @PathVariable Integer id) {
         List<ArchivoActivo> archivos = assetService.listarArchivosDeCarpeta(id);
         if (archivos.isEmpty()) {
             return ResponseEntity.noContent().build();
@@ -88,9 +108,17 @@ public class AssetController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Busca un archivo por ID")
+    @Operation(
+            summary = "Buscar archivo por ID",
+            description = "Obtiene el detalle de un archivo multimedia especifico."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Archivo encontrado", content = @Content(schema = @Schema(implementation = ArchivoActivo.class))),
+            @ApiResponse(responseCode = "404", description = "Archivo no encontrado", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor", content = @Content)
+    })
     @GetMapping("/archivos/{id}")
-    public ResponseEntity<EntityModel<ArchivoActivo>> buscarArchivo(@PathVariable Integer id) {
+    public ResponseEntity<EntityModel<ArchivoActivo>> buscarArchivo(@Parameter(description = "ID del archivo multimedia", example = "1", required = true) @PathVariable Integer id) {
         Optional<ArchivoActivo> archivo = assetService.buscarArchivo(id);
         return archivo.map(value -> {
                     EntityModel<ArchivoActivo> model = EntityModel.of(value);
